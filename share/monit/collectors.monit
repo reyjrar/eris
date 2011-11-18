@@ -1,0 +1,49 @@
+check process inventory with pidfile /var/run/eris/inventory-client.pl.pid
+	group collector
+	start program "/usr/local/bin/perl /opt/local/eris/collector/inventory-client.pl"
+		as uid apache and gid apache
+	stop program "/bin/bash -c 'kill -s SIGTERM `cat /var/run/eris/inventory-client.pl.pid`'"
+	if 5 restarts within 5 cycles then timeout
+	depends on inventory_bin
+	depends on eris_cfg
+	depends on logging_cfg
+
+check file inventory_bin with path /opt/local/eris/collector/inventory-client.pl
+	group collector
+	if changed checksum then restart
+
+check process security with pidfile /var/run/eris/security-client.pl.pid
+	group collector
+	start program "/usr/local/bin/perl /opt/local/eris/collector/security-client.pl"
+		as uid apache and gid apache
+	stop program "/bin/bash -c 'kill -s SIGTERM `cat /var/run/eris/security-client.pl.pid`'"
+	if 5 restarts within 5 cycles then timeout
+	depends on security_bin
+	depends on eris_cfg
+	depends on logging_cfg
+
+check file security_bin with path /opt/local/eris/collector/security-client.pl
+	group collector
+	if changed checksum then restart
+
+check process graphite with pidfile /var/run/eris/graphite-client.pl.pid
+	group collector
+	start program "/usr/local/bin/perl /opt/local/eris/collector/graphite-client.pl"
+		as uid apache and gid apache
+	stop program "/bin/bash -c 'kill -s SIGTERM `cat /var/run/eris/graphite-client.pl.pid`'"
+	if 5 restarts within 5 cycles then timeout
+	depends on graphite_bin
+	depends on eris_cfg
+	depends on logging_cfg
+
+check file graphite_bin with path /opt/local/eris/collector/graphite-client.pl
+	group collector
+	if changed checksum then restart
+
+check file eris_cfg with path /opt/local/eris/etc/eris.cfg
+	group collector
+	if changed checksum then restart
+
+check file logging_cfg with path /opt/local/eris/etc/logging.conf
+	group collector
+	if changed checksum then restart

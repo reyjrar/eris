@@ -1,0 +1,18 @@
+check process dnsupdater with pidfile /var/run/eris/dnsmgr-dnsupdater.pl.pid
+	group dnsmgr
+	start program "/usr/local/bin/perl /opt/local/eris/bin/dnsmgr-dnsupdater.pl"
+		as uid apache and gid apache
+	stop program "/bin/bash -c 'kill -s SIGTERM `cat /var/run/eris/dnsmgr-dnsupdater.pl.pid`'"
+	if 5 restarts within 5 cycles then timeout
+	depends on dnsupdater_bin
+	depends on dnsupdater_cfg
+
+check file dnsupdater_bin with path /opt/local/eris/bin/dnsmgr-dnsupdater.pl
+	group dnsmgr
+	if changed checksum then restart
+	if changed timestamp then restart
+
+check file dnsupdater_cfg with path /opt/local/eris/etc/dnsmgr.cfg
+	group dnsmgr
+	if changed checksum then restart
+	if changed timestamp then restart
