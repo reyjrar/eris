@@ -1,2 +1,4 @@
 .svn*
 etc/*.cfg
+www/*.conf
+www/mason/**
