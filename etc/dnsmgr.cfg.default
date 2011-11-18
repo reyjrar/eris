@@ -1,0 +1,43 @@
+---
+rootdir: /opt/local/eris
+cachedir: /tmp/dnsmgr/cache
+workdir: /tmp/dnsmgr/work
+statedir: etc/logging.conf
+sources:
+  static:
+    enabled: 1
+    engine: eris::dnsmgr::read::dbic
+    db_dsn: 'dbi:Pg:dbname=eris;host=mydb.example.com;sslmode=require'
+    db_user: dnsmgr
+    db_pass: dnspass
+    interval: 90
+    zones:
+      - example.com
+   
+  dhcp:
+    enabled: 0
+    engine: eris::dnsmgr::read::dhcpd_log
+    priority: 10
+    authorized_updaters:
+      - 1.2.3.4
+      - 1.2.4.4
+    zonemap:
+      1.2.3.0/24: lan.example.com
+      1.2.4.0/24: lan.example.com
+
+zones:
+  example.com:
+    engine: eris::dnsmgr::write::dynamic_update
+    server: 1.1.1.1
+    key_name: dnsmgr
+    key: wsdkjglksjd90237612kl1h2==
+    admins:
+      - hostmaster@example.com
+
+  lan.example.com:
+    engine: eris::dnsmgr::write::dynamic_update
+    server: 1.1.1.1
+    key_name: dnsmgr
+    key: wsdkjglksjd90237612kl1h2==
+    admins:
+      - hostmaster@example.com

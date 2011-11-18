@@ -1,0 +1,28 @@
+---
+statedir: /var/run/eris
+db_dsn: # Data Source Name (DSN) for your database
+db_user: # Database Username
+db_pass: # Database Password
+debug: 1 # Debugging (0 - no) (1 - yes)
+
+# NetDisco Integration
+netdisco:
+  db_dsn:
+  db_user:
+  db_pass:
+
+collector:
+  graphite:
+    carbon:
+      host: graphite.example.com
+      port: 2003
+    keywords:
+      error: error
+      auth_fail:
+        + login failed
+        + authentication fail
+      auth_success:
+        + accepted password
+        + login successful
+        + authentication succeeds
+        + session opened
