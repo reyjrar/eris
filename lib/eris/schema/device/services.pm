@@ -71,7 +71,7 @@ __PACKAGE__->table("services");
 =head2 network_name
 
   data_type: 'varchar'
-  default_value: 'niairp'
+  default_value: 'lan'
   is_nullable: 0
   size: 20
 
@@ -119,7 +119,7 @@ __PACKAGE__->add_columns(
   "network_name",
   {
     data_type => "varchar",
-    default_value => "niairp",
+    default_value => "lan",
     is_nullable => 0,
     size => 20,
   },
