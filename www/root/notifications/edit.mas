@@ -1,0 +1,258 @@
+<%method title><% $title %></%method>
+<%args>
+	$data_ref
+</%args>
+<script type="text/javascript">
+function addAdminUser( username ) {
+	$('#admins').append('<li id="adminUser-' + username + '" ' 
+				+ 'class="ui-state-default ui-corner-all ui-state-hover float-left">' 
+				+ '<input type="hidden" name="admin_users" value="'
+				+ username + '"/><a href="#">' + username 
+				+ '<span class="ui-icon ui-icon-close float-left"></span></a></li>'
+	);
+	$('#adminUser-' + username + ' a').click( function() {
+		$('#adminUser-' + username).addClass('ui-state-error');
+		$('#adminUser-' + username).fadeOut( 500, function() {
+			$(this).remove();
+		});
+	});
+}
+</script>
+<form method="POST" action="<% $c->uri_for('/notifications/save') %>">
+<input type="hidden" name="mod_user_id" value="<% $c->user->user_id %>"/>
+<input type="hidden" name="notification_id" value="<% $data{notification_id} %>"/>
+<fieldset>
+ <legend>Notification Details</legend>
+
+ <div class="span-17 last">
+	<label for="name" class="span-5 bottom">Notification Name</label>
+	<input type="text" name="name" id="name" class="required span-12 last" value="<% $data{name} %>"/>
+ </div>
+
+ <div class="span-17 last">
+	<label class="span-5" for="evt_type_id">Event Type Trigger</label>
+	<select name="evt_type_id" id="evt_type_id" class="required span-12 last">
+		<option value="0">--</option>
+%	foreach my $evt (sort keys %EventTypes) {
+%		my $checked = $EventTypes{$evt} == $data{evt_type_id} ? ' selected="selected"' : '';
+		<option value="<% $EventTypes{$evt} %>"<% $checked %>><% $evt %></option>
+%	}
+	</select>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-5" for="min_events_trigger"># of Events to Trigger</label>
+	<input type="text" name="min_events_trigger" id="min_events_trigger" class="required span-12 last" value="<% $data{min_events_trigger} %>"/>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-5" for="notification_interval">Notification Interval</label>
+	<input class="span-12 last required" type="text" name="notification_interval" id="notification_interval"
+		value="<% $data{notification_interval} %>"/>
+  </div>
+
+
+  <div class="span-17 last">
+	<label class="span-5" for="acAdmins">Event Adminisrtators</label>
+	<div class="span-12 last" id="acAdmins">
+		<input type="text" name="acUsername" id="acUsername" size="20"/>
+		<input type="button" name="usernameAdd" id="usernameAdd" value="add"/>
+		<script type="text/javascript">
+			$('#acUsername').autocomplete('<% $c->uri_for('/user/search/ajax') %>', autocompleteOpts);
+			$('#usernameAdd').click( function() {
+				var username = $('#acUsername').val();
+				$('#acUsername').val( '' );
+				$('#adminUser-' + username).remove();
+				addAdminUser( username );
+				$('#acUsername').focus();
+			});
+% foreach my $user (@{ $data{admins} }) {
+		$(document).ready( function() {
+			addAdminUser('<% $user %>');
+		});
+% }
+		</script>
+	</div>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-5" for="admins">&nbsp;</label>
+	<ul id="admins" class="condensed ui-widget span-12 last"></ul>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-5" for="alert_from_address">Email From</label>
+	<input class="span-12 last" type="text" name="alert_from_address" id="alert_from_address"
+		value="<% $data{alert_from_address} %>"/>
+  </div>
+
+  <div class="span-17 last">
+	<div class="prepend-5 span-12">
+%		my $checked = $data{is_enabled} == 1 ? ' checked="checked"' : '';
+		<input class="ui-helper-hidden-accessible clearfix" type="checkbox"
+			name="is_enabled" id="is_enabled" value="1"<% $checked %>/>
+		<label for="is_enabled" id="lblIsEnabled" class="ui-corner-all">
+		Notification Enabled</label>
+	</div>
+  </div>
+  <script type="text/javascript">
+	ternClassApply( 'lblIsEnabled', 'is_enabled', 1, 'eris-button-green', 'eris-button-gray' );
+  </script>
+
+
+</fieldset>
+
+<fieldset>
+  <legend>Event Origination Details</legend>
+
+  <div class="prepend-1 span-15 append-1 last"><p class="alt">Origination
+	Events refer to the first time a user trips this notifications configured
+	signatures.  If you want email to be sent to the adminisrators and the end
+	user, select "Send <em>Whom</em> Originiation Emails".
+  </p></div>
+
+  <div class="span-17 last">
+	<label class="span-6" for="orig_admin_alert">Send Admins Origination Emails?</label>
+	<div class="span-11 last" style="vertical-align: middle">
+		<input type="checkbox" name="orig_admin_alert" id="orig_admin_alert" 
+			<% $data{orig_admin_alert} == 1 ? 'checked="checked"' : '' %> value="1"/>
+	</div>
+  </div>
+
+
+  <div id="depOrigAdmin">
+	<div class="span-17 last">
+		<label class="span-5" for="orig_admin_subject">Administrator Subject Line</label>
+		<input class="span-12 last" type="text" name="orig_admin_subject" id="orig_admin_subject"
+			value="<% $data{orig_admin_subject} %>"/>
+	</div>
+
+	<div class="span-17 last">
+		<label class="span-5" for="orig_admin_message">Administrator Message</label>
+		<textarea class="span-12 last" cols="25" rows="10" name="orig_admin_message" id="orig_admin_message"><% $data{orig_admin_message} %></textarea>
+	</div>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-6" for="orig_user_alert">Send End Users Origination Emails?</label>
+	<div class="span-11 last"><input type="checkbox" name="orig_user_alert" id="orig_user_alert" value="1"
+		<% $data{orig_user_alert}  == 1 ? 'checked="checked"':'' %>/></div>
+  </div>
+
+
+  <div id="depOrigUser">
+	<div class="span-17 last">
+		<label class="span-5"for="orig_user_subject">End User Subject Line</label>
+		<input class="span-12 last" type="text" name="orig_user_subject" id="orig_user_subject"
+			value="<% $data{orig_user_subject} %>"/>
+	</div>
+
+	<div class="span-17 last">
+		<label class="span-5" for="orig_user_message">End User Message</label>
+		<textarea class="span-12 last" cols="25" rows="10" name="orig_user_message" id="orig_user_message"><% $data{orig_user_message} %></textarea>
+	</div>
+
+<!--	<div class="span-17 last">
+		<label class="span-5" for="orig_file">File to Attach?</label>
+		<div class="span-12 last">
+			<div id="orig_file_upload" class="span-2 button ui-state-default ui-state-hover">Upload</div>
+			<div class="span-4 last" id="orig_file_uploaded" class="condensed"></div>
+		</div>
+	</div>
+-->	
+  </div>
+</fieldset>
+
+<script type="text/javascript">
+	showDepSection('orig_admin_alert', 'depOrigAdmin', 1);
+	showDepSection('orig_user_alert', 'depOrigUser', 1);
+
+/*	new AjaxUpload('#orig_file_upload', {
+			action: '<% $c->uri_for('/notifications/file_upload') %>',
+			onSubmit: function (file, ext) {
+				$(this).remove();
+				$('#orig_file_uploaded').text("uploading '" + file + "' ...");
+				$('#orig_file_uploaded').addClass('notice');
+			},
+			onComplete: function(file, response) {
+				$('#orig_file_uploaded').text("Uploaded '" + file + "' !" );
+				$('#orig_file_uploaded').removeClass('notice');
+				$('#orig_file_uploaded').addClass('success');
+			}
+	}); */
+</script>
+
+<fieldset>
+  <legend>Event Summary Details</legend>
+
+  <div class="prepend-1 span-15 append-1 last"><p class="alt">Summary Events
+	occur at pre-defined intervals.  If you want administrators and end users to
+	receive reminders of their activity with regards to this class of
+	notifications, select "Send Summary Emails".
+  </p></div>
+
+  <div class="span-17 last">
+	<label class="span-6" for="summary_admin_alert">Send Admins Summary Emails?</label>
+	<div class="span-11 last"><input type="checkbox" name="summary_admin_alert" id="summary_admin_alert" value="1"
+		<% $data{summary_admin_alert} == 1 ? 'checked="checked"': '' %>/></div>
+  </div>
+
+  <div id="depSummaryAdmin">
+	<div class="span-17 last">
+		<label class="span-5" for="summary_admin_subject">Administrator Subject Line</label>
+		<input class="span-12 last" type="text" name="summary_admin_subject" id="summary_admin_subject"
+			value="<% $data{summary_admin_subject} %>"/>
+	</div>
+
+	<div class="span-17 last">
+		<label class="span-5" for="summary_admin_message">Administrator Message</label>
+		<textarea class="span-12 last" cols="25" rows="10" name="summary_admin_message"
+			id="summary_admin_message"><% $data{summary_admin_message} %></textarea>
+	</div>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-6" for="summary_user_alert">Send End Users Summary Emails?</label>
+	<div class="span-11 last"><input type="checkbox" name="summary_user_alert" id="summary_user_alert" value="1"
+		<% $data{summary_user_alert} == 1 ? 'checked="checked"': '' %>/></div>
+  </div>
+
+
+  <div id="depSummaryUser">
+	<div class="span-17 last">
+		<label class="span-5" for="summary_user_subject">End User Subject Line</label>
+		<input class="span-12 last" type="text" name="summary_user_subject" id="summary_user_subject"
+			value="<% $data{summary_user_subject} %>"/>
+	</div>
+
+	<div class="span-17 last">
+		<label class="span-5" for="summary_user_message">End User Message</label>
+		<textarea class="span-12 last" cols="25" rows="10" name="summary_user_message"
+			id="summary_user_message"><% $data{summary_user_message} %></textarea>
+	</div>
+  </div>
+
+</fieldset>
+
+<div class="span-17 last">
+	<div class="prepend-6 span-1 colborder"><input type="submit" name="submit" value="Save Changes"/></div>
+	<div class="prepend-1 append-7 span-1 last"><input type="reset" name="reset" value="Undo Changes"/></div>
+</div>
+<script type="text/javascript">
+	showDepSection('summary_admin_alert', 'depSummaryAdmin', 1);
+	showDepSection('summary_user_alert', 'depSummaryUser', 1);
+</script>
+
+
+</form>
+<%shared>
+my $name = $m->request_args()->{data_ref}{name};
+my $title = defined $name ? 'edit notification' : 'create notification';
+</%shared>
+<%init>
+my %EventTypes = ();
+foreach my $etype ( $c->model('DB::event::type')->all() ) {
+	$EventTypes{$etype->name} = $etype->evt_type_id;
+}
+my %data = %{ $data_ref };
+</%init>

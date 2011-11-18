@@ -1,0 +1,52 @@
+<%method title>ip management main</%method>
+<%args>
+ $ipmgt_rs
+</%args>
+
+<h2>IP Management Tools</h2>
+
+<form method="POST" action="<% $c->uri_for('/dnsmgr/ipmgt/request') %>">
+<div class="prepend-1 span-16 last">
+ Request static IP in
+ <select class="span-3" name="range" id="range">
+	<option value="">choose one</option>
+% foreach my $set (@ranges) {
+	<option value="<% $set->mgt_id %>"><% $set->name %></option>
+% }
+	</select>
+	<input class="span-4" type="text" name="clientid" id="clientid"/>
+	<input type="hidden" name="zone_id" id="zone_id"/>
+	.
+	<input class="span-5" type="text" name="zone" id="zone" value="none specified" readonly="readonly"/>
+	<input type="submit" name="request_ip" id="request_ip" value="submit"/>
+</div>
+</form>
+
+<script type="text/javascript">
+var default_zones = {
+% foreach my $id (sort keys %zones) {
+	<% $id %>: { 'id': <% $zones{$id}->{id} %>, 'name': '<% $zones{$id}->{name} %>' },
+% } # End zone Javascript Translation
+};
+$('#range').change(function (evt) {
+	var range_id = $(evt.target).val();
+	if( default_zones[range_id] ) {
+		$('#zone').val( default_zones[range_id]['name'] );
+		$('#zone_id').val( default_zones[range_id]['id'] );
+	}
+});
+</script>
+
+<& /dnsmgr/ipmgt/stats.mas, ipmgt_rs => $ipmgt_rs->reset &>
+
+<%init>
+my @ranges = ();
+my %zones = ();
+while( my $set = $ipmgt_rs->next ) {
+	push @ranges, $set;
+	$zones{$set->mgt_id} = {
+		id => $set->default_zone_id,
+		name => $set->default_zone->name,
+	};
+}
+</%init>

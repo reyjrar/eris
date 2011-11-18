@@ -1,0 +1,45 @@
+% if( ref $devices ) {
+<table id="nodeList" class="small display">
+<thead>
+ <tr>
+	<th>Hostname</th>
+	<th>MAC</th>
+	<tH>Type</th>
+	<th>IP</th>
+	<th>Last Seen</th>
+	<th>Switch</th>
+	<th>Port</th>
+ </tr>
+</thead>
+<tbody>
+<%perl> 
+while( my $d = $devices->next ) {
+	my $name = $d->clientid ? $d->clientid : '[NODE:' . $d->device_id . ']';
+</%perl>
+ <tr>
+		<td><a href="<% $c->uri_for('/node/' . $d->device_id  .'/view' )%>" alt="view <% $name %>"><% $name %></a></td>
+		<td class="searchable"><% $d->mac %></td>
+		<td><% $d->device_type %></td>
+		<td class="searchable"><% $d->ip %></td>
+		<td><% $d->device_ts %></td>
+		<td><% get_reverse($d->switch_ip) %></td>
+		<td><% $d->switch_port %></td>
+ </tr>
+%	} # END FOR EACH DEVICE
+</tbody>
+</table>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#nodeList').dataTable({
+			'bJQueryUI': true,
+			'iDisplayLength': 50,
+			'aaSorting': [ [ 4, 'desc' ] ]
+		});
+	});
+</script>
+% }
+
+<%args>
+	$devices => undef
+</%args>
+<%method title>node listing</%method>

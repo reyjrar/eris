@@ -1,0 +1,59 @@
+<h2>Zone Records for <% $zone->name %></h2>
+<table id="zoneRecords" class="display span-17 last">
+<thead>
+ <tr>
+	<th>Name</th>
+	<th>Class</th>
+	<th>Type</th>
+	<th>Opt</th>
+	<th>Value</th>
+	<th>&nbsp;</th>
+ </tr>
+</thead>
+<tbody>
+% while( my $rec = $main_rs->next ) {
+ <tr>
+	<td><% $rec->name %></td>
+	<td><% $rec->class %></td>
+	<td><% $rec->type %></td>
+	<td><% $rec->opt %></td>
+	<td><% $rec->value %></td>
+	<td><a href="<% $c->uri_for( '/dnsmgr/zone/delete_record', $rec->record_id ) %>" alt="Delete <% $rec->name %>">delete</a></td>
+ </tr>
+%	foreach my $subrec ( $rs->search( { parent_id => $rec->record_id } ) ) {
+ <tr>
+	<td><% $subrec->name %></td>
+	<td><% $subrec->class %></td>
+	<td><% $subrec->type %></td>
+	<td><% $subrec->opt %></td>
+	<td><% $subrec->value %></td>
+	<td><a href="<% $c->uri_for( '/dnsmgr/zone/delete_record', $subrec->record_id ) %>" alt="Delete <% $subrec->name %>">delete</a></td>
+ </tr>
+
+% 	} # end sub
+% }
+</tbody>
+</table>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#zoneRecords').dataTable({
+			'bJQueryUI': true,
+			'bSort': false,
+			'iDisplayLength': 25
+		});
+	});
+</script>
+<hr class="space"/>
+<& /dnsmgr/zone/record/new.mas, zone => $zone &>
+<%init>
+	my $rs = $c->model('DB::dnsmgr::records')->search(
+		{ zone_id => $zone->zone_id },
+		{ order_by => [qw( parent_id name )] },
+	);
+	my $main_rs = $rs->search( { parent_id => 0 }, { order_by => 'name' } );
+</%init>
+<%shared>
+	my $args = $m->request_args;
+	my $zone = $args->{zone};
+</%shared>
+<%method title>Managing :: <% $zone->name %></%method>

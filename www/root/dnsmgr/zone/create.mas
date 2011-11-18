@@ -1,0 +1,87 @@
+<%args>
+	$zone_rs
+</%args>
+<form method="POST" action="<% $c->uri_for('/dnsmgr/zone/create') %>">
+<fieldset>
+  <legend>create a new zone</legend>
+
+  <div class="span-17 last">
+	<label class="span-5" for="zone_type">Type :</label>
+	<select class="span-7 last" name="zone_type" id="zone_type" width="25">
+		<option value="forward">forward</option>
+		<option value="reverse">reverse</option>
+	</select>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-5" for="zone_name">Name :</label>
+ 	<input class="span-7" type="text" name="zone_name" id="zone_name" value=""/>
+	<span class="error span-5 last" id="name_error" style="display: none;"></span>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-5" for="description">Description :</label>
+ 	<input class="span-11 last" type="text" name="description" id="description" value=""/>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-5" for="accept">Accept IP Range :</label>
+ 	<input class="span-7 last" type="text" name="accept" id="accept" value="any"/>
+  </div>
+
+  <hr class="space"/>
+
+  <div class="span-17 last">
+	<div class="span-8 colborder right">
+		<input type="submit" name="save_zone" value="save"/>	
+	</div>
+	<div class="span-8 last">
+		<input type="reset" name="reset_zone" value="reset"/>	
+	</div>
+ </div>
+
+</fieldset> 
+</form>
+
+<div id="zoneBar" class="ui-helper-reset ui-widget" style="display: none;">
+  <div class="ui-tabs ui-widget-header">Zones</div>
+  <div class="ui-tabs ui-widget-content">
+% while ( my $zone = $zone_rs->next ) {
+%	my $hide = $zone->type eq 'forward' ? '' : ' style="display: none;"';
+	<div class="ui-state-default <% $zone->type %>"<% $hide %>>
+		&nbsp; <span class="zone_name"><% $zone->name %></span>
+	</div>
+% }
+  </div>
+</div>
+<script type="text/javascript">
+	$(function() {
+		$('#zoneBar').prependTo('#sidebar');
+		$('#zoneBar').show();
+	});
+
+	$('#zone_type').change(function (evt) {
+		var zone_type = $(evt.target).val();
+		if( zone_type == "forward" ) {
+			$('#zoneBar * div.forward').show();
+			$('#zoneBar * div.reverse').hide();
+		}
+		else {
+			$('#zoneBar * div.forward').hide();
+			$('#zoneBar * div.reverse').show();
+		}
+	});
+
+	$('#zone_name').change(function(evt) {
+		var zone_name = $(evt.target).val();
+		var used = $('.zone_name');
+		$('#name_error').hide();
+		$.each( used, function(idx){ 
+			if( zone_name == $(used[idx]).text() ) {
+				$('#name_error').text("ERROR: Name in Use!").show();
+			}
+		});
+	});
+
+</script>
+

@@ -1,0 +1,70 @@
+% if( $rs->count > 0 ) {
+<table id="query_results" class="display span-17" name="query_results">
+<thead>
+ <tr>
+	<th>MAC Address</th>
+	<th>IP</th>
+	<th>Client ID</th>
+	<th>Username</th>
+	<th>How</th>
+	<th>When</th>
+ </tr>
+</thead>
+<tbody>
+% while( my $rec = $rs->next ) {
+<%perl>
+	my $device_url = $rec->device_id > 0 ? 
+		$c->uri_for( '/node/'.  $rec->device_id .  '/view' ) : '#';
+	my $display_name = $rec->clientid ? $rec->clientid : '[NODE: ' . $rec->device_id . ']';
+</%perl>
+ <tr>
+	<td class="searchable"><% $rec->mac %></td>
+	<td class="searchable"><% $rec->ip %></td>
+	<td><a href="<% $device_url %>" alt="Details for <% $rec->clientid %>"><% $display_name %></a></td>
+	<td class="searchable"><% $rec->username %></td>
+	<td><% $rec->discovery_method %></td>
+	<td><% $rec->event_ts->strftime('%F %H:%M') %></td>
+ </tr>
+% } # end row
+</tbody>
+</table>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#query_results').dataTable({
+			'bJQueryUI': true,
+			'iDisplayLength': 25,
+			'aaSorting': [ [ 5, 'desc' ] ]
+		});
+	});
+</script>
+% } # End if results
+% else {
+<div class="ui-state-highlight ui-corner-all boxed">
+	<span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span>
+	No results for <% $query_context %> <strong><% $query_str %></strong> in the past <% $interval %>
+</div>
+% }
+<%args>
+	$query_str
+	$query_context
+	$query_interval
+</%args>
+<%method title>search results</%method>
+<%init>
+my %intervals = (
+	'2d'	=> '2 days',
+	'1w'	=> '7 days',
+	'1m'	=> '30 days',
+	'6m'	=> '180 days'
+);
+my $DEF_INT = '2d';
+my $interval = exists $intervals{$query_interval} ? $intervals{$query_interval} : $intervals{$DEF_INT};
+
+my $rs = $c->model('DB::view::history')->search(
+	{ $query_context => $query_str,
+	  'event_ts' => \qq{> NOW() - interval '$interval'}
+	},
+	{	order_by => 'event_ts DESC', rows => 100 }
+);
+my $cnt = 0;
+</%init>

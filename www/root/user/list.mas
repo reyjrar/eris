@@ -1,0 +1,38 @@
+<%args>
+	$user_rs
+	$qs => undef
+</%args>
+% if( defined $qs && length $qs ) {
+<h3>filtered on '<% $qs |h %>'</h3>
+% }
+<table id="userList" class="display">
+<thead>
+	<tr>
+		<th>First Name</th>
+		<th>Last Name</th>
+		<th>Username</th>
+		<th>Email</th>
+		<th>Last Login</th>
+	</tr>
+</thead>
+<tbody>
+% while( my $user = $user_rs->next ) {
+  <tr>
+	<td><% $user->first_name %></td>
+	<td><% $user->last_name %></td>
+	<td><a href="<% $c->uri_for( '/user/' . $user->user_id . '/view') %>"><% $user->username %></a></td>
+	<td><% $user->email %></td>
+	<td><% ref $user->ext_last_logon_ts ? $user->ext_last_logon_ts->ymd : 'unavailable' %></td>
+  </tr>
+% }
+</tbody>
+</table>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#userList').dataTable({
+			'bJQueryUI': true,
+			'aaSorting': [ [ 1, 'asc' ], [ 0, 'asc' ] ]
+		});
+	});
+</script>
+<%method title>user list</%method>

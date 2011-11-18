@@ -1,0 +1,24 @@
+<form method="POST" action="<% $c->uri_for('/login') %>">
+<fieldset>
+ <legend>User Login</legend>
+ <div>
+	<label for="username">Username :</label>
+	<input type="text" name="username" id="username" size="25"/>
+ </div>
+
+ <div>
+	<label for="password">Password :</label>
+	<input type="password" name="password" id="password" size="25"/>
+ </div>
+
+ <div>
+	<input type="submit" name="login" value="login"/>
+ </div>
+
+</fieldset>
+
+</form>
+<script type="text/javascript">
+	$('#username').focus();
+</script>
+<%method title>login</%method>

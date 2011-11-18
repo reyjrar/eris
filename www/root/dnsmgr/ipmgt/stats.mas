@@ -1,0 +1,33 @@
+<%args>
+	$ipmgt_rs
+</%args>
+
+<div class="ui-widget prepend-2 span-12 last">
+<table class="ui-tabs ui-widget-content ui-corner-all" id="ipmgtTable">
+<thead>
+ <tr>
+	<th class="ui-widget-header ui-corner-all">Name</th>
+	<th class="ui-widget-header ui-corner-all">Total</th>
+	<th colspan="2" class="ui-widget-header ui-corner-all">Free</th>
+ </tr>
+</thead>
+<tbody>
+% while( my $mgt = $ipmgt_rs->next ) {
+%	my $used = $mgt->used_ips;
+%	my $total = $mgt->total_ips;
+  <tr>
+	<td><% $mgt->name %></td>
+	<td><% $total %></td>
+	<td><% $total - $used %></td>
+	<td class="center"><span class="sparkpie"><% $total - $used %>,<% $used %></span></td>
+  </tr>
+% }
+<tbody>
+</table>
+</div>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('.sparkpie').sparkline('html', { type: 'pie', sliceColors: [ '#00ff00', '#ff0000' ] } );
+	});
+</script>

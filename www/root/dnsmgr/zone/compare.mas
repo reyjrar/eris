@@ -1,0 +1,60 @@
+<%args>
+  $zone
+  $entries
+  $dns_results
+</%args>
+<table>
+<form action="<% $c->uri_for("/dnsmgr/$zone/write") %>" method="POST">
+<tbody>
+% foreach my $name (sort keys %{ $entries } ) {
+%	foreach my $type (sort keys %{ $entries->{$name} } ) {	
+%		my %source=();
+<tr id="comp-<% $name %>-<% $type %>">
+  <th><% $name %></th>
+%		my $other = undef;
+%		foreach my $src (qw(db dns)) {
+%			my $v = ref $entries->{$name}{$type}{$src} ?
+%					join(', ', sort @{ $entries->{$name}{$type}{$src} }) : 'not set';
+%			$source{$src} = $v;
+%			if( defined $other ) { push @errors, "$name-$type" if $v ne $other; } else { $other=$v }
+	<th><% $src %></th>
+	<td><% $type %></td>
+	<td><% join(' <br/> ', split /, /, $v) %></td>
+%		}
+%		if($source{db} eq 'not set') {
+%			$correctionCounter++;
+%			my $pre = qq{correctAdd-$correctionCounter};
+	<td>
+		<input type="hidden" id="<% $pre %>-name" name="<% $pre %>-name" value="<% $name %>"/>
+		<input type="hidden" id="<% $pre %>-type" name="<% $pre %>-type" value="<% $type %>"/>
+		<span>
+		<input type="checkbox" id="<% $pre %>-apply" name="<% $pre %>-apply" value="<% $source{dns} %>"/>
+		add to db</span>
+	</td>
+%		} else {
+	<td>&nbsp;</td>
+%		} # End DB Empty
+%		if( $type eq 'A' ) {
+%			foreach my $src (keys %{ $dns_results->{$name} }) {
+	<th><% $src %></th>
+	<td><% join(' <br/>', @{ $dns_results->{$name}{$src} } ) %></td>
+%			} # dns results loop
+%		} else {
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+%		}
+</tr>
+%	}
+% }
+</tbody>
+</form>
+</table>
+<script type="text/javascript">
+% foreach my $name ( @errors ) {
+	$('#comp-<% $name %>').addClass('error');
+% }
+</script>
+<%init>
+my @errors = ();
+my $correctionCounter = 0;
+</%init>

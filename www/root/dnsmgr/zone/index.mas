@@ -1,0 +1,46 @@
+<%args>
+	$zone_rs
+</%args>
+% if ( defined $zone_rs && $zone_rs->count > 0 ) {
+<table id="dnsmgrZones" class="display span-17 last">
+<thead>
+<tr>
+	<th>id</th>
+	<th>Zone</th>
+	<th>Description</th>
+	<th>Type</th>
+	<th>Records</th>
+</tr>
+</thead>
+<tbody>
+%	while( my $zone = $zone_rs->next ) {
+<tr>
+	<td><% $zone->zone_id %></td>
+	<td><a href="<% $c->uri_for( '/dnsmgr/zone/' .  $zone->zone_id ) %>" alt="<% $zone->name %>"><% $zone->name %></a></td>
+	<td><% $zone->description %></td>
+	<td><% $zone->type %></td>
+	<td><% $zone->records->count %></td>
+</tr>
+%	}
+</tbody>
+</table>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#dnsmgrZones').dataTable({
+			'bJQueryUI': true,
+			'iDisplayLength': 100,
+			'aoColumns': [
+				{ 'sWidth': "0px", 'bVisible': false },
+				{ 'sWidth': "150px" },
+				{ 'sWidth': "230px" },
+				{ 'sWidth': "110px" },
+				{ 'sWidth': "5px" }
+			],
+			'aaSorting': [ [ 3, 'asc' ], [ 1, 'asc' ] ]
+		});
+	});
+</script>
+% } else {
+<h2>No zones managed.</h2>
+% }
+<%method title>DNS Manager :: Zone Overview</%method>

@@ -1,0 +1,154 @@
+<%attr>
+	sidebar	=> 'off'
+</%attr>
+<script type="text/javascript">
+	var cellHighlights = [
+		{ 'str': '137.187.160', 'class': 'hl_green' },
+		{ 'str': '137.187.161', 'class': 'hl_green' },
+		{ 'str': '137.187.162', 'class': 'hl_green' },
+		{ 'str': '137.187.163', 'class': 'hl_green' },
+		{ 'str': '137.187.20.', 'class': 'hl_blue' },
+		{ 'str': '156.40.66.', 'class': 'hl_red' },
+		{ 'str': '156.40.67.', 'class': 'hl_red' }
+	];
+	var add_row = function( index, elem ) {
+		var nodeUrl = '<% $c->uri_for('/node/') %>' + elem['id'] + '/view';
+		var newRow = jQuery('<tr>')
+				.append('<td class="span-2">' + elem['date'] + '</td>')
+				.append('<td>' + elem['method'] + '</td>')
+				.append('<td class="searchable">' + elem['ip'] + '</td>')
+				.append('<td class="searchable">' + elem['mac'] + '</td>')
+				.append('<td><a href="' + nodeUrl + '">'+ elem['clientid'] + '</a></td>');
+
+		$('#historyConsole tbody').append( newRow );
+	}
+	var loading=false;
+	function loadConsole(filters) {
+		loading=true;
+		$.getJSON( '<% $c->uri_for("/network/history/records/json") %>', filters,
+			function( data ) {
+				$('#historyConsole tbody').empty();
+
+				$(data).each( add_row );
+
+				$('#historyConsole * .searchable').each( function(idx,elm) {
+					var contents = $(elm).text();
+					for(var i in cellHighlights) {
+						var hl = cellHighlights[i];
+						if( contents.indexOf( hl['str'] ) != -1 ) {
+							$(elm).toggleClass( hl['class'], true );
+							break;
+						} 
+					}
+				});
+				loading=false;
+				doSearchable();
+			}
+		);
+	}
+	function dateChooser( evt ) {
+		var selected = $('input:radio[name=dateChooser]:checked').val();
+		$('#dateChooser input:radio').each(function(idx,elm) {
+			var elmValue = $(elm).val();
+			if( elmValue == selected ) {
+				$('#date' + elmValue).show();
+			}
+			else {
+				$('#date' + elmValue).hide();
+				$('#date' + elmValue).find('input').val('');
+			}
+		});
+	}
+
+	/* Bind historys on Loading */
+	$(document).ready(function() {
+		/* initial load */
+		loadConsole();	
+
+		/* Refresh */
+		$('#consoleRefresh').click( function(evt) {
+			// Don't double load
+			if( loading ) { alert("loading results, please wait"); return; }
+
+			$('#historyConsole tbody').prepend( jQuery('<tr>')
+				.append('<td colspan="5" class="center">.. loading ..</td>')
+			);
+
+			// Filters 
+			var curr_filters = {};
+			$('.consoleFilter').each( function(idx,elm) {
+				var field = $(elm).attr('id');
+				var value = $(elm).val();
+				if( value ) {
+					curr_filters[field] = value;
+				}
+			});
+			loadConsole(curr_filters);
+		});
+		/* Date Items */
+		$('.datePicker').datepicker({ 'dateFormat': 'yy-mm-dd'});
+		/* sliders */
+		$('#limitSlider').slider({
+			value: 200,
+			min: 100,
+			max: 1000,
+			step: 100,
+			slide: function(history,ui) {
+					$('#limit').val( ui.value );
+			}
+		});
+		$('#limit').val( 200 );
+	});
+</script>
+
+<div id="historyConsoleController" class="ui-tabs ui-state-default ui-widget ui-corner-all span-24 last"><form>
+  <div class="ui-tabs ui-widget-header">Filters</div>
+  <div class="ui-widget-content">
+	<div class="prepend-1 span-6">
+		IP: <input type="text" class="span-5 consoleFilter" name="ip" id="ip"/>
+	</div>
+	<div class="span-4">
+		<div class="span-4 left">
+			Rows: <input type="text" class="span-2 right consoleFilter" name="limit" id="limit" readonly="readonly"/>
+		</div>
+		<div id="limitSlider" class="span-3"></div>
+	</div>
+	<!-- Date Selection -->
+	<div class="span-5">
+		<div class="span-5 append-1 right last" id="dateRange">
+			<div class="last">
+				<span class="span-2 right">Start :</span>
+				<input type="text" class="span-3 consoleFilter datePicker" name="start_date" id="start_date"/>
+			</div>
+			<div class="last">
+				<span class="span-2 right">End :</span>
+				<input type="text" class="span-3 consoleFilter datePicker" name="end_date" id="end_date"/>
+			</div>
+		</div>
+	</div>
+	
+	<div class="prepend-3 span-3 last">
+		<a class="float-left ui-state-default ui-corner-all button" id="consoleRefresh" href="#">
+			<span class="ui-helper-reset float-left ui-icon ui-icon-refresh"></span>refresh</a>
+	</div>
+  </div><!-- End Filter Widget -->
+</form></div>
+
+<hr class="space"/>
+
+<table id="historyConsole" class="last console">
+<thead>
+  <tr class="ui-corner-all">
+	<th>When</th>
+	<th>Source</th>
+	<th>IP</th>
+	<th>MAC</th>
+	<th>Device</th>
+  </tr>
+</thead>
+<tbody>
+  <tr id="consoleLoader">
+	<td colspan="5" class="center">.. loading ..</td>
+  </tr>
+</tbody>
+</table>

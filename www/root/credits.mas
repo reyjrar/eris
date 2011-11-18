@@ -1,0 +1,27 @@
+<%attr>
+	sidebar	=> 'off'
+</%attr>
+<div class="prepend-3 span-17 last">
+<h1>Credits</h1>
+<ul>
+	<li><a href="http://perl.org">Perl</a>
+		<ul>
+			<li><a href="http://poe.perl.org">POE</a></li>
+			<li><a href="http://catalyst.perl.org">Catalyst</a></li>
+			<li><a href="http://masonhq.com">Mason</a></li>
+		</ul>
+	</li>
+	<li><a href="http://jquery.com">jQuery</a>
+		<ul>
+			<li><a href="http://jqueryui.com">jQuery UI</a></li>
+			<li><a href="http://datatables.net">Data Tables</a></li>
+			<li><a href="https://github.com/jboesch/Gritter">jQuery Gritter</a></li>
+			<li><a href="http://users.tpg.com.au/j_birch/plugins/superfish/">Superfish</a></li>
+			<li><a href="http://omnipotent.net/jquery.sparkline/">jQuery Sparklines</a></li>
+		</ul>
+	</li>
+	<li><a href="http://www.famfamfam.com/lab/icons/silk/">Silk Icons</a></li>
+	<li><a href="http://coderfish.org/pastel-svg/">Pastel SVG Icons</a></li>
+	<li><a href="http://blueprintcss.org">Blue Print CSS Framework</a></li>
+</ul>
+</div>

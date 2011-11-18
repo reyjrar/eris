@@ -1,0 +1,7 @@
+<h2>F/OSS Version Updates</h2>
+
+<p>Removed all $WORK specific branding to create a blank slate to finally Open Source this project.</p>
+
+% if (!$c->user) {
+	<div>Please <a href="<% $c->uri_for( '/auth/login' ) %>">login</a>.</div>
+% }

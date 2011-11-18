@@ -1,0 +1,376 @@
+<%args>
+	$device
+</%args>
+<div class="ui-tabs ui-widget ui-widget-content ui-corner-all span-17 last">
+ <h3 class="ui-tabs ui-widget-header ui-state-default ui-corner-all">Device Details</h3>
+	<div class="span-17 last">
+		<div class="span-8">
+			<label for="clientid" class="span-4 top">Machine Name :</label>
+			<span id="clientid" class="span-4 last"><% $device->clientid %></span>
+		</div>
+		<div class="prepend-1 span-8 last">
+			<label for="make_model" class="span-4 top">Make/Model :</label>
+			<span id="make_model" class="span-4 last"><% $make_model %></span>
+		</div>
+	</div>
+
+	<div class="span-17 last">
+		<div class="span-8">
+			<label for="mac_addr" class="span-4 top">MAC :</label>
+			<span id="mac_addr" class="span-4 last"><% $device->mac_addr %></span>
+		</div>
+		<div class="prepend-1 span-8 last">
+			<label for="ip_addr" class="span-4 top">Current IP :</label>
+			<span id="ip_addr" class="span-4 last"><% $device->ip_addr %></span>
+		</div>
+	</div>
+
+	<div class="span-17 last">
+		<label for="switch_port" class="span-4 top">Switch Port :</label>
+		<span id="switch_port" class="span-13 last">
+			<% defined $device->overview ? $device->overview->switch_port : 'n/a' %>
+			<% defined $device->overview ? ' @ ' . uc get_reverse($device->overview->switch_ip) : '' %>
+		</span>
+	</div>
+
+% if ( defined $device->details ) {
+	<div class="span-17 last">
+		<div class="span-8">
+			<label for="property_tag" class="span-4 top">Decal # :</label>
+			<span id="property_tag" class="span-4"><% $device->details->property_tag %></span>
+		</div>
+		<div class="prepend-1 span-8 last">
+			<label for="serial_no" class="span-4 top">Serial # :</label>
+		 	<span id="property_tag" class="span-4"><% $device->details->serial_no %></span>
+		</div>
+	</div>
+% } # end if defined details
+	<div class="span-17 last">
+		<div class="span-8">
+			<label for="primary_user" class="span-4 top">Primary User :</label>
+			<span id="primary_user" class="span-13 last"><% $primaryUser %></span>
+		</div>
+		<div class="prepend-1 span-8 last">
+			<label for="last_user" class="span-4 top">Last User :</label>
+			<span id="last_user" class="span-13 last"><% $lastUser %></span>
+		</div>
+	</div>
+
+<!-- Device Status -->
+% my $status_rs = $device->status({ is_archived => 'false' }, { order_by => { -desc => 'mod_ts' } });
+%	if( $status_rs->count() > 0 ) {
+	<div class="span-17 last">
+		<label for="status" class="span-4 top">Last Status :</label>
+		<span id="status" class="span-13 last"><% $status_rs->next->name %></span>
+	</div>
+%	}
+	
+	<div class="span-17 last">
+		<label for="functions" class="span-4 top">Functions :</label>
+		<span id="functions" class="span-13 last">
+			<a class="ui-corner-all eris-button-gray" href="<% $c->uri_for( '/node/' . $device->device_id . '/edit' ) %>" alt="edit">
+				<span class="ss_sprite ss_database_edit">&nbsp;</span>Edit Details</a>
+		</span>
+	</div>
+
+</div>
+
+<hr class="space"/>
+
+<script type="text/javascript">
+	$(function() {
+		$("#logTabs").tabs();
+	});
+</script>
+<div id="logTabs" class="span-17 last">
+<ul>
+	<li><a href="#netContainer">Network History</a></li>
+	<li><a href="#authContainer">Authentication History</a></li>
+	<li><a href="#trafficContainer">Network Traffic</a></li>
+	<li><a href="#secContainer">Security Events</a></li>
+</ul>
+<div id="trafficContainer" class="center span-17">
+<%perl>
+	my $sniffer = $device->ip_addr ? $netres->find_first( $device->ip_addr ) : undef;
+</%perl>
+% if ( defined $sniffer && exists $trafmon_url{$sniffer} ) {
+%	foreach my $dur (qw(halfday day week month)) {
+	<img src="<% $trafmon_url{$sniffer} %>/rrd/<% $device->ip_addr %>/summary/bytes/<% $dur %>" alt="Traffic Graph, <% $dur %>"/>
+%	}
+% } else {
+	<h3 class="error span-15">Not enough information to locate the traffic graphs.</h3>
+% } 
+</div>
+
+<div id="netContainer" class="span-17 small">
+% if( scalar @network ) {
+<table id="netHistory" class="span-16 display">
+<thead>
+ <tr>
+	<th>How</th>
+	<th>IP</th>
+	<th>Name</th>
+	<th>From</th>
+	<th>To</th>
+	<th>#</th>
+ </tr>
+</thead>
+<tbody>
+% foreach my $rec ( @network ) {
+ <tr>
+	<td><% $rec->{method} %></td>
+	<td class="searchable"><% $rec->{ip} %></td>
+	<td class="searchable"><% $rec->{clientid} %></td>
+	<td><% $rec->{first_ts} %></td>
+	<td><% $rec->{last_ts} %></td>
+	<td><% $rec->{count} %></td>
+ </tr>
+% } # END Single Network History Record
+</tbody>
+</table>
+<script language="JavaScript">
+	$(document).ready( function() {
+		$.fn.dataTableExt.oJUIClasses.sWrapper = "span-16 dataTables_wrapper";
+		$('#netHistory').dataTable({
+			'sWrapper': 'span-16 dataTables_wrapper',
+			'bJQueryUI': true,
+			'iDisplayLength': 10,
+			'aaSorting': [[ 4, 'desc' ]]
+		});
+	});
+</script>
+% }  else { 
+	<h3 class="notice span-15">Device has not been seen on the network.</h3>
+% } # End Network History
+</div>
+
+<div id="authContainer" class="small">
+% if ( scalar @authen ) {
+<table id="authHistory" class="display">
+<thead>
+ <tr>
+	<th>How</th>
+	<th>Who</th>
+	<th>From</th>
+	<th>To</th>
+	<th>#</th>
+ </tr>
+</thead>
+<tbody>
+% foreach my $rec (@authen) {
+ <tr>
+	<td><% $rec->{method} %></td>
+	<td class="searchable"><% $rec->{username} %></td>
+	<td><% $rec->{first_ts} %></td>
+	<td><% $rec->{last_ts} %></td>
+	<td><% $rec->{count} %></td>
+ </tr>
+% } # End of records
+</tbody>
+</table>
+<script language="JavaScript">
+	$(document).ready( function() {
+		$('#authHistory').dataTable({
+			'bJQueryUI': true,
+			'iDisplayLength': 10,
+			'aaSorting': [[ 4, 'desc' ]]
+		});
+	});
+</script>
+% } else {
+	<h3 class="notice span-15">No authentication events from this device.</h3>
+% } # End Authentication
+</div>
+
+<div id="secContainer" class="small">
+% if( $sec_rs->count ) {
+<table id="securityEvents" class="display">
+<thead>
+ <tr>
+	<th>Class</th>
+	<th>Message</th>
+	<th>Target</th>
+	<th>When</th>
+ </tr>
+</thead>
+<tbody>
+% while( my $evt = $sec_rs->next ) {
+<tr>
+	<td><% $evt->signature->type->name %></td>
+	<td><% $evt->signature->description %></td>
+	<td class="searchable"><% $evt->src_ip eq $device->ip_addr ? $evt->dst_ip : $evt->src_ip %></td>	
+	<td><% $evt->event_ts %></td>
+</tr>
+% }
+</tbody>
+</table>
+<script type="text/javascript">
+	$(document).ready( function() {
+		$('#securityEvents').dataTable({
+			"iDisplayLength": 10,
+			"bJQueryUI": true,
+			'aaSorting': [[ 3, 'desc' ]]
+		});
+	});
+</script>
+% } else {
+	<h3 class="notice span-15">No security events from this device.</h3>
+% }
+</div>
+
+</div>
+
+% if( $srv_rs->count ) {
+<div id="serviceBar" class="ui-helper-reset ui-widget" style="display: none;">
+  <div class="ui-tabs ui-widget-header">Services Active Recently</div>
+  <div class="ui-tabs ui-widget-content">
+% while ( my $srv = $srv_rs->next ) {
+		<div class="ui-state-default prepend-1"><% $srv->proto %>:<% $srv->port %> @ <% $srv->vicinity %></div>
+% }
+  </div>
+</div>
+<script type="text/javascript">
+	$(function() {
+		$('#serviceBar').prependTo('#sidebar');
+		$('#serviceBar').show();
+	});
+</script>
+% }
+
+<%init>
+use Net::IP::Resolver;
+# Grab some attributes we'll do analysis on:
+my $ip = $device->ip_addr;
+my $clientid = $device->clientid;
+my $mac = $device->mac_addr;
+# Primary User
+my $primaryUser = 'not set';
+my $make_model = 'not set';
+if( defined $device->details ) {
+	$primaryUser = $device->details->primary_user->display_name if defined $device->details->primary_user;
+	$make_model = $device->details->make_model || 'not set';
+}
+
+my $lastUser = 'unknown';
+my $netres = Net::IP::Resolver->new();
+my %trafmon_url = ();
+my %_sniffers = %{ $c->config->{trafmon}{sniffer} };
+foreach my $sniffer (keys %_sniffers) {
+	my $net = $_sniffers{$sniffer}->{network};
+	$netres->add( $sniffer =>  ref $net ? @{$net} : $net );
+	$trafmon_url{$sniffer} = $_sniffers{$sniffer}->{url};
+}
+push @{ $c->flash->{_debug} },
+	{ sniffers => \%_sniffers },
+	{ trafmon_url => \%trafmon_url };
+# Build out the last 15 days of authentication history
+my $auth_rs = $c->model('DB::view::history')->search(
+	{
+		device_id	=> $device->device_id,
+		event_ts	=> \q{> NOW() - interval '15 days'},
+		ip			=> \q{is not null},
+		username	=> \q{is not null},
+	},
+	{
+		order_by => q{event_ts},
+		rows		=> 200,
+	},
+);
+
+my @authen = ();
+my $key = '';
+my %record = ();
+while ( my $rec = $auth_rs->next ) {
+	my $localKey = join(';;', $rec->discovery_method, $rec->username);
+	if( $key ne $localKey ) {
+		unshift @authen, { %record } if %record;
+		$key = $localKey;
+		%record = (
+			username	=> $rec->username,
+			method		=> $rec->discovery_method,
+			first_ts	=> $rec->event_ts,
+			last_ts		=> $rec->event_ts,
+			count		=> 1,
+		);
+	}
+	else {
+		$record{count}++;
+		$record{last_ts} = $rec->event_ts;
+	}
+}
+if ( %record ) {
+	unshift @authen, { %record };
+	$lastUser = $record{username};
+}
+
+# Build out 15 days of network discovery
+my $node_rs = $c->model('DB::view::history')->search(
+	{
+		device_id	=> $device->device_id,
+		event_ts	=> \q{> NOW() - interval '15 days'},
+		ip			=> \q{is not null},
+		mac			=> \q{is not null},
+	},
+	{
+		order_by => q{event_ts},
+		rows	=> 200,
+	},
+);
+my @network = ();
+%record = ();
+$key = '';
+while ( my $rec = $node_rs->next ) {
+	my $localKey = join('::', $rec->discovery_method, $rec->ip, $rec->clientid );
+	if( $key ne $localKey ) {
+		unshift @network, { %record } if %record;
+		$key = $localKey;
+		%record = (
+			method		=> $rec->discovery_method,
+			ip			=> $rec->ip,
+			clientid	=> $rec->clientid,
+			first_ts	=> $rec->event_ts,
+			last_ts		=> $rec->event_ts,
+			count		=> 1,
+		);
+
+	}
+	else {
+		$record{count}++;
+		$record{last_ts} = $rec->event_ts;
+	}
+}
+unshift @network, { %record } if defined $key;
+
+# Services
+my $srv_rs = $c->model('DB::device::services')->search(
+	{
+		device_id	=> $device->device_id,
+		last_ts		=> \q{> NOW() - interval '15 days'},
+	},
+	{
+		order_by	=> [ qw( proto port ) ],
+	},
+);
+
+# Security Details
+my $sec_rs = $c->model('DB::event')->search(
+	{
+		event_ts => \q{> NOW() - interval '15 days'},
+		-or => [
+			{src_id => $device->device_id},
+			{dst_id => $device->device_id}
+		]
+	},
+	{
+		order_by => q{event_ts desc},
+		rows	=> 250,
+		prefetch => {
+			signature => 'type'
+		}
+	}
+);
+</%init>
+
+<%method title>
+view device overview
+</%method>

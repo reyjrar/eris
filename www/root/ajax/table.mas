@@ -1,0 +1,24 @@
+<%args>
+	$entries
+	$header		=> undef
+</%args>
+<table>
+<thead>
+% if( defined $header && ref $header eq 'ARRAY' ) {
+<tr>
+%	foreach my $title ( @$header ) {
+	<th><% $title %></th>
+% 	}
+</tr>
+% }
+</thead>
+<tbody>
+% foreach my $row ( @$entries ) {
+<tr>
+%	foreach my $col (@$row) {
+	<td><% $col %></td>
+%	} # end of col
+</tr>
+% } # End foreach entry
+</tbody>
+</table>

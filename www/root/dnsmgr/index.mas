@@ -1,0 +1,6 @@
+<%method title>dnsmgr - naming chaos</%method>
+<h2>utilities</h2>
+<div class="push-1 span-17 last">
+	<a href="<% $c->uri_for('/dnsmgr/zone/list') %>" alt="zone management">zone management</a></div>
+<div class="push-1 span-17 last">
+	<a href="<% $c->uri_for('/dnsmgr/ipmgt/main') %>" alt="ip management">ip space management</a></div>

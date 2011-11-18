@@ -1,0 +1,10 @@
+% if( $c->check_any_user_role('eris::admin','dnsmgr::admin') ) {
+<hr class="space"/>
+<div class="ui-tab ui-widget span-17 last">
+<h3 class="ui-tab ui-widget-header">Add a new IP Management Container</h3>
+
+<div class="ui-widget-content">
+</div>
+
+</div>
+% }

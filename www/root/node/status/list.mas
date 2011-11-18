@@ -1,0 +1,43 @@
+<%args>
+	$status
+	$status_href
+	$log_rs
+</%args>
+<%method title>node status log</%method>
+
+<h2>Displaying Logs: <% $status %></h2>
+
+<table id="statusLog" class="display">
+<thead>
+  <tr>
+	<th>Timestamp</th>
+	<th>Status</th>
+	<th>User</th>
+	<th>Host</th>
+	<th>Model</th>
+	<th>MAC</th>
+  </tr>
+</thead>
+<tbody>
+% while( my $entry = $log_rs->next ) {
+% my $make_model = defined $entry->device->details ? $entry->device->details->make_model : '&nbsp;';
+  <tr>
+	<td><% $entry->mod_ts->strftime('%m/%d %H:%M') %></td>
+	<td><% $entry->status->name %></td>
+	<td><% $entry->mod_user->username %></td>
+	<td><a href="<% $c->uri_for('/node/'. $entry->device->device_id  . '/view') %>"><% $entry->device->clientid %></a></td>
+	<td><% $make_model %></td>
+	<td><% $entry->device->mac_addr %></td>
+  </tr>
+% } #end each log entry
+</tbody>
+</table>
+<script type="text/javascript">
+	$(document).ready( function() {
+		$('#statusLog').dataTable({
+			'bJQueryUI': true,
+			'iDisplayLength': 25,
+			'aaSorting': [[ 0, 'desc' ]]
+		});
+	});
+</script>

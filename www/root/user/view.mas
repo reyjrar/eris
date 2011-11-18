@@ -1,0 +1,168 @@
+<%args>
+	$user_id
+	$user
+</%args>
+<div class="ui-tabs ui-widget ui-widget-content ui-corner-all span-17 last">
+  <h3 class="ui-tabs ui-widget-header ui-state-default ui-corner-all">User Details</h3>
+  <div class="span-17 last">
+	<label for="status" class="span-5 top">Status :</label>
+	<div id="status" class="center ui-corner-all <% $user->is_active ? 'eris-button-green' : 'eris-button-red' %> span-6 last"><% $user->is_active ? 'Active' : 'Disabled'  %></div>
+  </div>
+  <div class="span-17 last">
+	<label for="full_name" class="span-5 top">Full Name :</label>
+	<span id="full_name" class="span-12 last"><% $user->display_name %></span>
+  </div>
+  <div class="span-17 last">
+	<label for="email" class="span-5 top">Email :</label>
+	<span id="email" class="span-12 last"><a href="mailto:<% $user->email %>"><% $user->email %></a></span>
+  </div>
+  <div class="span-17 last">
+	<label for="lab" class="span-5 top">Lab :</label>
+	<span id="lab" class="span-12 last"><% join(' ', $user->orgid, $user->lab ) %></span>
+  </div>
+  <div class="span-17 last">
+	<label for="last_logon" class="span-5 top">AD Last Logon :</label>
+	<span id="last_logon" class="span-12 last"><% $user->ext_last_logon_ts %></span>
+  </div>
+  <!-- eris data -->
+  <div class="span-17 last">
+	<label for="roles" class="span-5 top">eris Roles :</label>
+	<span id="roles" class="span-12 last"><% join(', ', @roles) %></span>
+  </div>
+</div>
+
+<hr class="space"/>
+
+<script type="text/javascript">
+	$(function() {
+		$("#infoTabs").tabs();
+	});
+</script>
+<div id="infoTabs" class="span-17 last">
+<ul>
+	<li><a href="#authContainer">Authentication History</a></li>
+	<li><a href="#devicesContainer">User's Devices</a></li>
+</ul>
+
+<div id="authContainer" class="small">
+<table id="authHistory" class="display">
+<thead>
+ <tr>
+	<th>How</th>
+	<th>Where</th>
+	<th>From</th>
+	<th>To</th>
+	<th>#</th>
+ </tr>
+</thead>
+<tbody>
+% foreach my $rec (@authen) {
+ <tr>
+	<td><% $rec->{method} %></td>
+	<td><a href="<% $c->uri_for('/node/'. $rec->{device_id} .'/view' ) %>"><% $rec->{clientid} ? $rec->{clientid} : $rec->{ip}  %></a></td>
+	<td><% $rec->{first_ts} %></td>
+	<td><% $rec->{last_ts} %></td>
+	<td><% $rec->{count} %></td>
+ </tr>
+% } # End of records
+</tbody>
+</table>
+<script language="JavaScript">
+	$(document).ready( function() {
+		$('#authHistory').dataTable({
+			'bJQueryUI': true,
+			'iDisplayLength': 10,
+			'aaSorting': [[ 3, 'desc' ]]
+		});
+	});
+</script>
+</div>
+
+<div id="devicesContainer" class="small">
+<table id="deviceRecords" class="display">
+<thead>
+  <tr>
+	<th>Device</th>
+	<th>Type</th>
+	<th>Last Seen</th>
+	<th>By</th>
+  </tr>
+</thead>
+<tbody>
+% foreach my $details ( $user->owned_devices( undef, { prefetch => 'device' } ) ) {
+  <tr>
+	<td><a href="<% $c->uri_for('/node/' . $details->device_id . '/view') %>" alt="view device">
+		<% $details->device->clientid %></a></td>
+	<td><% $details->node_type->short %></td>
+	<td><% $details->device->last_ts %></td>
+	<td><% $details->device->discovery_method %></td>
+  </tr>
+% } # End Device Entry
+</tbody>
+</table>
+<script language="JavaScript">
+	$(document).ready( function() {
+		$('#deviceRecords').dataTable({
+			'bJQueryUI': true,
+			'iDisplayLength': 10,
+			'aaSorting': [[ 2, 'desc' ]]
+		});
+	});
+</script>
+</div>
+
+</div><!-- infoTabs -->
+
+<%init>
+# Roles
+my @roles = ();
+foreach my $role ( $user->roles ) {
+	push @roles, $role->name;	
+}
+push @roles, 'NONE' unless @roles;
+
+# Build out the last 15 days of authentication history
+my $lastUser = 'unknown';
+my $auth_rs = $c->model('DB::view::history')->search(
+	{
+		user_id		=> $user_id,
+		event_ts	=> \q{> NOW() - interval '15 days'},
+		ip			=> \q{is not null},
+		username	=> \q{is not null},
+	},
+	{
+		order_by => q{event_ts},
+		rows		=> 200,
+		prefetch	=> 'device',
+	},
+);
+
+my @authen = ();
+my $key = '';
+my %record = ();
+while ( my $rec = $auth_rs->next ) {
+	my $localKey = join(';;', $rec->discovery_method, $rec->username, $rec->device_id);
+	if( $key ne $localKey ) {
+		unshift @authen, { %record } if %record;
+		$key = $localKey;
+		%record = (
+			username	=> $rec->username,
+			ip			=> $rec->ip,
+			device_id	=> $rec->device->device_id,
+			clientid	=> $rec->device->clientid,
+			method		=> $rec->discovery_method,
+			first_ts	=> $rec->event_ts,
+			last_ts		=> $rec->event_ts,
+			count		=> 1,
+		);
+	}
+	else {
+		$record{count}++;
+		$record{last_ts} = $rec->event_ts;
+	}
+}
+if ( %record ) {
+	unshift @authen, { %record };
+	$lastUser = $record{username};
+}
+</%init>

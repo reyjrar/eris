@@ -1,0 +1,301 @@
+<%args>
+	$node		=> undef
+</%args>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('.button').button();
+	});
+</script>
+<form method="POST" action="<% $c->uri_for( '/node/' . $device_id  . '/save') %>">
+
+<fieldset>
+  <legend>Basic Information</legend>
+% if( $device_id ) {
+  <div class="span-17 last">
+       <label class="span-5 top" for="history">Functions :</label>
+       <div class="span-11 last">
+			<a id="view" href="<% $c->uri_for('/node/'.$device_id . '/view') %>" alt="Device Overview">Device Overview</a>
+		</div>
+  </div>
+
+% } # end if Device ID
+
+  <div class="span-17 last">
+	<label class="span-5" for="clientid">Machine Name :</label>
+ 	<input class="span-7" type="text" name="clientid" id="clientid" size="25" <% $disableStatic %>
+		value="<% $node->{clientid} %>"/>
+
+% if( $disableStatic ) {
+	<span class="span-5 last">Override Name ?<input type="checkbox" name="overwrite_clientid" id="overwrite_clientid"/></span>
+	<script language="JavaScript">
+	$('#overwrite_clientid').click( function() {
+		document.getElementById('clientid').disabled = !this.checked;
+  	});
+	</script>
+% } # End of OverWrite
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-5" for="mac_addr">MAC Address :</label>
+ 	<input class="span-7 last" type="text" name="mac_addr" id="mac_addr" size="25" <% $disableStatic %>
+		value="<% $node->{mac_addr} %>"/>
+  </div>
+ 
+  <div class="span-17 last">
+	<label class="span-5" for="ip_addr">IP Address :</label>
+ 	<input class="span-7 last" type="text" name="ip_addr" id="ip_addr" size="25" <% $disableStatic %>
+		value="<% $node->{ip_addr} %>"/>
+  </div>
+
+  <div class="span-17 last">
+	<label class="span-5" for="vlan_id">Assigned VLAN :</label>
+	<select class="span-7 last" name="vlan_id" id="vlan_id" width="25">
+% foreach my $v ( $c->model('DB::switch::vlans')->search( {}, { order_by => 'vlan_name' }) ) {
+%   my $selected = $v->vlan_id == $node->{vlan_id} ? ' SELECTED="SELECTED"' : '';
+	<option value="<% $v->vlan_id %>"<% $selected %>><% $v->vlan_name %></option>
+% }
+	</select>
+  </div>
+ 
+</fieldset>
+
+
+<fieldset>
+ <legend>Device Details</legend>
+
+ <div class="span-17 last">
+	<label class="span-5" for="primary_user">Primary User :</label>
+ 	<input class="span-7 last" type="text" name="primary_user" id="primary_user" size="25"
+		value="<% $node->{primary_user} %>"/>
+	<script language="JavaScript">
+	$('#primary_user').autocomplete({ minLength: 2, source: function( request, response ) {
+			$.ajax({
+				url: "<% $c->uri_for('/user/search/json') %>",
+				data: { q: request.term },
+				success: function(data) { response( data ); }
+			});
+		}
+	});
+	</script>
+ </div>
+	
+ <div class="span-17 last">
+	 <label class="span-5" for="property_tag">Property Tag :</label>
+ 	<input class="span-7 last" type="text" name="property_tag" id="property_tag" size="25"
+		value="<% $node->{property_tag} %>"/>
+ </div>
+ <div class="span-17 last">
+	 <label class="span-5" for="property_tag">Serial No :</label>
+ 	<input class="span-7 last" type="text" name="serial_no" id="serial_no" size="25"
+		value="<% $node->{serial_no} %>"/>
+ </div>
+ <div class="span-17 last">
+	 <label class="span-5" for="make_model">Make &amp; Model :</label>
+	 <input class="span-7 last" type="text" name="make_model" id="make_model" size="25"
+		value="<% $node->{make_model} %>"/>
+	<script language="JavaScript">
+	$('#make_model').autocomplete({ minLength: 2, source: function( request, response ) {
+			$.ajax({
+				url: '<% $c->uri_for('/node/makemodel/json') %>',
+				data: { q: request.term },
+				success: function(data) { response(data); }
+			});
+		}
+	});
+	</script>
+ </div>
+
+ <div class="span-17 last"> 
+	 <label class="span-5" for="node_type_id">Device Type :</label>
+	 <select class="span-7 last" name="node_type_id" id="node_type_id" width="25">
+		<option value=""></option>
+% foreach my $t ( $c->model('DB::device::type')->search({}, { order_by => 'short' }) ) {
+%   my $selected = $t->node_type_id == $node->{node_type_id} ? ' SELECTED="SELECTED"' : '';
+		<option value="<% $t->node_type_id %>"<% $selected %>><% $t->short %></option>
+% }
+	 </select>
+
+ </div>
+
+<!-- Device Class -->
+ <div class="span-8 colborder">
+	<div class="prepend-2 span-6">
+	  <h3 class="span-6 last">Operating System</h3>
+	  <div class="ui-helper-reset span-6 last">
+<%perl>
+my $idx = 0;
+foreach my $cl ( $c->model('DB::device::class')->search( { type => 'os' }, { order_by => 'name' }) ) {
+	my $checked = '';
+	$idx++;
+	foreach my $clid ( @{ $node->{device_class_id} } ) {
+		if( $clid == $cl->device_class_id ) {
+			$checked=' CHECKED="CHECKED"';
+			last;
+		}
+ 	}
+</%perl>
+		<input type="checkbox" id="device_os_id_<% $idx %>" name="device_class_id"
+			class="button" value="<% $cl->device_class_id %>"<% $checked %>/>
+		<label for="device_os_id_<% $idx %>" id="lbl_dc_<% $idx %>"
+			class="span-5 last center"><% $cl->name %></label>
+% }
+	  </div>
+	</div>
+ </div>
+
+ <div class="span-8 last">
+	<div class="prepend-1 span-7 last">
+	  <h3 class="span-7 last">Other Specialities</h3>
+	  <div class="ui-helper-reset span-6 last">
+<%perl>
+$idx = 0;
+foreach my $cl ( $c->model('DB::device::class')->search( { type => { '<>' => 'os' } }, { order_by => 'name' }) ) {
+	my $checked = '';
+	$idx++;
+	foreach my $clid ( @{ $node->{device_class_id} } ) {
+		if( $clid == $cl->device_class_id ) { 
+			$checked=' CHECKED="CHECKED"';
+			last;
+		}
+   }
+</%perl>
+		<input type="checkbox" id="device_other_id_<% $idx %>" name="device_class_id"
+			class="button" value="<% $cl->device_class_id %>"<% $checked %>/>
+		<label for="device_other_id_<% $idx %>" id="lbl_dco_<% $idx %>"
+			class="span-5 last center"><% $cl->name %></label>
+		</script>
+% }
+	  </div>
+	</div>
+ </div>
+<!-- End Device Class -->
+
+</fieldset>
+
+<!-- Regulatory Information -->
+% my $regs = $c->model('DB::map::regulatory::application')->search( {node_type_id => $node->{node_type_id} } );
+% if( defined $regs && $regs->count() ) {
+<div id="sectionRegulatory">
+
+% while( my $mra = $regs->next ) {
+	<fieldset>
+		<input type="hidden" name="regulations" value="<% $mra->regulation_id %>"/>
+		<legend>Regulation: <% $mra->regulation->name %></legend>
+
+		<div class="prepend-3 span-11 last">
+			<div class="ui-state-highlight ui-corner-all">
+				<span class="span-1 right float-left ui-icon ui-icon-info"></span>
+				<p span="span-11 last"><% $mra->regulation->description %></p>
+			</div>
+		</div>
+	
+	
+		<div class="span-17 last">
+			<span class="prepend-1 span-12">Has this machine had <% $mra->regulation->name %> applied successfully?</span>
+			<select class="span-2 last" name="reg_compliance_<% $mra->regulation_id %>" id="reg_compliance_<% $mra->regulation_id %>">
+				<option value="0">No</option>
+%	my $selected = $node->{regulatory_compliance}{$mra->regulation_id} ? ' SELECTED="SELECTED"' : '';
+				<option value="1"<% $selected %>>Yes</option>
+			</select>
+		</div>
+
+%		my $rs = $c->model('DB::regulatory::device::log')->search(
+%				{ regulation_id => $mra->regulation_id, device_id => $device_id }, { order_by => 'entry_ts' } );
+% if( $rs->count > 0 ) {
+		<div class="prepend-1 span-15 last">
+		<h3>Status Log</h4>
+		<table>
+		<thead>
+			<tr>
+				<th>Date</th>
+				<th>User</th>
+				<th>Status</th>
+				<th>Comments</th>
+			</tr>
+		</thead>
+	
+		<tbody>
+%	while ( my $log = $rs->next ) {
+		<tr>
+			<td><% $log->entry_ts %></td>
+			<td><% $log->user->display_name %></td>
+			<td><% $log->status %></td>
+			<td><% $log->comments %></td>
+		</tr>
+% 	} # end each Status Log	
+		</tr>
+		</tbody>
+		</table>
+		</div>
+% } # end if Status Count
+		<div class="span-17 last">
+			<label class="span-5" for="reg_dev_log_status_<% $mra->regulation_id %>">
+				Alternate Status:</label>
+			<select class="span-10 last" name="reg_dev_log_status_<% $mra->regulation_id %>"
+				id="reg_dev_log_status_<% $mra->regulation_id %>">
+					<option value=""></option>
+					<option value="exempt">Exemption</option>
+					<option value="failure">Failure</option>
+					<option value="comp">Compensating Control</option>
+					<option value="offsite">Off-site/Geographically Unavailable</option>
+					<option value="surplus">Surplus</option>
+					<option value="instrument">Attached to Instrument</option>
+					<option value="comments">See Comments</option>
+				</select>
+		</div>
+
+		<div class="span-17 last">
+			<label class="span-5" for="reg_dev_log_comments_<% $mra->regulation_id %>">
+				Status Comments:</label>
+			<textarea class="span-10 last" rows="2" cols="25" name="reg_dev_log_comments_<% $mra->regulation_id %>"
+				id="reg_dev_log_comments_<% $mra->regulation_id %>"></textarea>
+		</div>
+
+	</fieldset>
+% }
+</div>
+% } # ENDIF Regulations
+
+<fieldset>
+ <legend>Save Device Information</legend>
+
+ <div class="span-17 last">
+	<div class="span-8 colborder right">
+		<input type="submit" name="save_node" value="save"/>	
+	</div>
+	<div class="span-8 last">
+		<input type="reset" name="reset_node" value="reset"/>	
+	</div>
+ </div>
+</fieldset>
+
+</form>
+
+<%method title>
+	<% $device_id > 0 ? 'edit' : 'add' %>  node <% length $clientid ? ':: '.$clientid : '!! BLANK DEVICE NAME !!' %>
+</%method>
+
+<%shared>
+	my $args = $m->request_args;
+	my %node = ();
+	my $clientid;
+	my $device_id = $args->{device_id} || 0;
+
+	if( ref $args->{node} eq 'HASH' ) {
+		$clientid = $args->{node}{clientid};
+	}
+</%shared>
+
+<%init>
+#
+# FDE Status
+my @fde_status = qw(none complete exempt scheduled surplus);
+
+my $devObj = undef;
+
+my $disableStatic = '';
+if( $device_id > 0) {
+	$disableStatic = 'disabled="disabled"';
+	$devObj = $c->model('DB::device')->find( $device_id );
+}
+</%init>

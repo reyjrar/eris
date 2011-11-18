@@ -1,0 +1,35 @@
+<%args>
+	$zone
+</%args>
+<div id="zoneNewRecord" class="ui-tabs ui-widget ui-widget-content ui-corner-all span-17 last">
+  <div class="ui-tabs ui-widget-header ui-corner-all">New Record in <% $zone->name %></div>
+  <div>
+	<form method="POST" action="<% $c->uri_for('/dnsmgr/zone/' . $zone->zone_id . '/add') %>">
+% if( $zone->type eq 'forward')  {
+	<div class="prepend-1 last">
+		<input type="text" id="rec_name" name="rec_name" class="span-3"/>.<% $zone->name %> is
+		<select id="rec_type" name="rec_type" class="span-3">
+			<option value="A">address</option>
+			<option value="CNAME">alias</option>	
+		</select>
+		<input type="text" id="rec_value" name="rec_value" class="span-4 last"/>
+	</div>
+% } else {
+	<div class="prepend-1 last">
+<%perl>
+	my $name = $zone->name;
+	my ($reversed) = ($name =~ /([0-9\.]+)\./);
+	my $prefix = join('.', reverse split /\./, $reversed);	
+</%perl>
+		<input type="hidden" name="rec_type" value="PTR"/>
+		<% $prefix %>.<input type="text" id="rec_name" name="rec_name" class="span-2"/> is
+		<input type="text" id="rec_value" name="rec_value" class="span-5 last"/>
+	</div>
+% }
+	<div class="center last">
+		<input type="submit" name="add" value="add" class="button span-2"/>
+	</div>
+	</form>
+  </div>
+
+</div>

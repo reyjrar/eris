@@ -1,0 +1,78 @@
+<%method title>dnsmgr :: confirm ip request</%method>
+<%args>
+	$fqdn
+	$clientid
+	$zone
+	$ip
+	$warnings
+</%args>
+
+<div class="span-9">
+<h2>Current Request</h2>
+<form action="<% $c->uri_for('/dnsmgr/ipmgt/confirm') %>" method="POST">
+<input type="hidden" name="zone_id" value="<% $zone->zone_id %>"/>
+<input type="hidden" name="ip" value="<% $ip %>"/>
+<input type="hidden" name="fqdn" value="<% $fqdn %>"/>
+<input type="hidden" name="clientid" value="<% $clientid %>"/>
+
+<table class="span-9 last">
+  <tr>
+	<th class="right">Hostname:</th><td><% $fqdn %></td>
+  </tr>
+  <tr>
+	<th class="right">IP Address:</th><td><% $ip %></td>
+  </tr>
+</table>
+<div class="center span-10 last">
+	<input type="checkbox" name="do_zone_update" id="do_zone_update"
+		value="1" checked="checked"/>
+	<label for="do_zone_update"><span id="update_icon" class="ss_sprite ss_tick" style="padding-bottom: 0;">&nbsp;</span>Automatically Update the <% $zone->name %> DNS</label>
+</div>
+
+<hr class="space"/>
+<div class="span-9 center last">
+	<button class="center span-3 ui-corner-all eris-button-green" type="submit" name="response"
+		value="confirm">confirm</button>
+	<button class="center span-3 ui-corner-all eris-button-red" type="submit" name="response"
+		value="reject"/>reject</button>
+</div>
+</form>
+
+</div>
+
+<div id="ipmgtWarnings" class="small prepend-top span-7 last">
+% if ( exists $warnings->{rec_name} && ref $warnings->{rec_name} eq 'ARRAY' ) {
+<script type="text/javascript">
+	$('#ipmgtWarnings').addClass('ui-state-highlight').addClass('ui-corner-all');
+</script>
+% foreach my $warning ( @{ $warnings->{rec_name} } ) {
+	<div class="indent">
+% if( $warning =~ s/=ICON=//g ) {
+			<span class="float-left ui-icon ui-icon-info"></span>
+% }
+		<% $warning %>
+	</div>
+% } # end foreach warning
+% } # End Warings for rec_name
+% if ( exists $warnings->{rec_value} && ref $warnings->{rec_value} eq 'ARRAY' ) {
+<script type="text/javascript">
+	$('#ipmgtWarnings').addClass('ui-state-highlight').addClass('ui-corner-all');
+</script>
+% foreach my $warning ( @{ $warnings->{value} } ) {
+	<div class="indent">
+% if( $warning =~ s/=ICON=//g ) {
+			<span class="float-left ui-icon ui-icon-info"></span>
+% }
+		<% $warning %>
+	</div>
+% } # end foreach warning
+% } # End Warings for rec_name</div>
+</div>
+
+<script type="text/javascript">
+	$('#do_zone_update').button();
+	$('#do_zone_update').bind('click', function() {
+		$('#update_icon').toggleClass('ss_tick');
+		$('#update_icon').toggleClass('ss_cross');
+	});
+</script>

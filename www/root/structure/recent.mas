@@ -1,0 +1,52 @@
+% if ($c->user_exists) {
+<%perl>
+	my $rs = $c->model('DB::device')->search(
+		{ first_ts => \qq{> NOW() - interval '$recent_interval'} },
+		{ order_by => 'first_ts DESC' }
+	);
+</%perl>
+%	if( $rs->count() > 0 ) {
+	<hr class="space"/>
+	<div id="recentDevBox" class="ui-helper-reset ui-widget">
+		<div class="ui-tabs ui-widget-header">[nodes] Recently Discovered</div>
+		<div class="ui-tabs ui-widget-content">
+%		while( my $dev = $rs->next ) {
+%			my $header = $dev->clientid		? $dev->clientid :
+%						 $dev->ip_addr		? $dev->ip_addr  :
+%							$dev->mac_addr;
+%			my $id = $dev->device_id;
+			<div class="ui-state-default">	
+				<a id="button_recent_dev_<% $id %>" class="ui-helper-reset" href="#">
+					<span class="ui-helper-reset float-left ui-icon ui-icon-newwin"></span>
+					<% $header %></a>
+			</div>
+			<div id="recent_dev_<% $id %>" title="<% $header %>"
+				class="ui-helper-reset ui-state-default" style="display: none">
+				<p>Device first seen on <% $dev->first_ts->ymd() %>
+					at <% $dev->first_ts->strftime('%T') %>.<br/>
+				   Last <% $dev->discovery_method %>
+					on <% $dev->first_ts->ymd() %>
+					at <% $dev->first_ts->strftime('%T') %>.
+				</p>
+				<p>
+					MAC is <strong><% $dev->mac_addr %></strong>. <br/>
+					IP is <strong><% $dev->ip_addr %></strong>. <br/>
+					Client ID is  <strong><% $dev->clientid %></strong>.
+				</p>
+				<p>[ <a href="<% $c->uri_for('/node/' . $dev->device_id . '/view') %>" alt="view device">view device</a> ]</p>
+			</div>
+			<script type="text/javascript">
+				$('#button_recent_dev_<% $id %>').bind('click', function(e) {
+						var id = '#recent_dev_<% $id %>';
+						$(id).dialog( { width: 400, autoOpen: true } );
+					}
+				);
+			</script>
+%		}
+		</div>
+	</div>
+%	} # end count
+% }
+<%args>
+	$recent_interval => '3 days'
+</%args>

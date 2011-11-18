@@ -1,0 +1,154 @@
+<html>
+ <head>
+	<title>eris :: <& SELF:title &></title>
+
+	<!-- JavaScript Libraries -->
+	<script type="text/javascript" src="<% $c->uri_for('/static/js/jquery.js') %>"></script>
+	<script type="text/javascript" src="<% $c->uri_for('/static/js/functions.js') %>"></script>
+
+	<!-- Stylesheets -->
+	<link rel="stylesheet" type="text/css" href="<% $c->uri_for('/static/css/main.css') %>"/>
+	<link rel="stylesheet" type="text/css" href="<% $c->uri_for('/static/css/blueprint/screen.css') %>"/>
+	<link rel="stylesheet" type="text/css" href="<% $c->uri_for('/static/css/blueprint/plugins/sprites/sprite.css') %>"/>
+	<link rel="stylesheet" type="text/css" href="<% $c->uri_for('/static/css/superfish.css') %>"/>
+	<link rel="stylesheet" type="text/css" href="<% $c->uri_for('/static/css/jquery.dataTables.css') %>"/>
+	<link rel="stylesheet" type="text/css" href="<% $c->uri_for('/static/css/jquery.gritter.css') %>"/>
+	<link rel="stylesheet" type="text/css" href="<% $c->uri_for('/static/css/smoothness/jquery.ui.css') %>"/>
+
+	<!-- jQuery UI -->
+	<script type="text/javascript" src="<% $c->uri_for('/static/js/jquery.ui.js') %>"></script>
+
+	<!-- jQuery Plugins -->
+	<script type="text/javascript" src="<% $c->uri_for('/static/js/jquery.hoverIntent.js') %>"></script>
+	<script type="text/javascript" src="<% $c->uri_for('/static/js/jquery.dataTables.js') %>"></script>
+	<script type="text/javascript" src="<% $c->uri_for('/static/js/jquery.superfish.js') %>"></script>
+	<script type="text/javascript" src="<% $c->uri_for('/static/js/jquery.sparkline.js') %>"></script>
+	<script type="text/javascript" src="<% $c->uri_for('/static/js/jquery.gritter.js') %>"></script>
+	
+
+ </head>
+<body>
+<script type="text/javascript">
+	function doSearchable() {
+		$('.searchable').click(function(evt) {
+			var value = $(this).text();
+			$('#query_str').val( value );
+		});
+		$('.searchable').dblclick(function(evt) {
+			var value = $(this).text();
+			$('#query_str').val( value );
+			$('#searchBar form').submit();
+		});
+	}
+	$(document).ready(doSearchable);
+</script>
+<div class="container">
+
+<div class="span-24 last">
+	<h1>eris :: <& SELF:title &></h1>
+	<div class="span-24 last nav">	
+		<& /structure/nav.mas &>
+	</div>
+	<div id="searchBar" class="right span-24-last">
+	<& /search/bar.mas, pass_args(qw(query_context query_str query_interval))  &>
+	</div>
+</div>
+
+<hr class="space"/>
+
+% if(  defined $c->flash->{errors} && ref $c->flash->{errors} eq 'ARRAY' ) {
+<script type="text/javascript">
+% foreach my $error (@{ $c->flash->{errors} }) {
+	$.gritter.add({
+		title: 'Error Encountered',
+		text: '<% $error |h %>',
+		sticky: true,
+		image: '<% $c->uri_for('/static/images/pastel-svg/exclamation.png') %>'
+	});
+% }
+</script>
+% } # End if errors
+
+% if(  defined $c->flash->{notice} ) {
+<script type="text/javascript">
+	$.gritter.add({
+		title: 'Notice',
+		text: '<% $c->flash->{notice} |h %>',
+		sticky: false,
+		image: '<% $c->uri_for('/static/images/pastel-svg/information.png') %>'
+	});
+</script>
+% } # End if errors
+
+% my $content_class = $OPT{sidebar} eq 'on' ? 'span-17' : 'span-24';
+<div id="content" class="<% $content_class %> left">
+% 	$m->call_next;
+</div>
+
+%if ( $OPT{sidebar} eq 'on' ) {
+<div id="sidebar" class="span-6 prepend-1 last">
+<& /structure/recent.mas &>
+% if ( $c->user_exists && $c->session->{debug} ) {
+<& /devel/debug.mas &>
+% }
+</div>
+% } # End if sidebar on
+
+<hr class="space"/>
+<hr/>
+<div id="footer" class="span-24 last">
+% if( $c->user_exists ) {
+	<div class="span-12">logged in as <a href="<% $c->uri_for('/user/' . $c->user->user_id . '/view' ) %>"><% $c->user->username %></a></div>
+	<div class="span-9 colborder right">
+		<span class="quiet">code by <a href="https://github.com/reyjrar">brad lhotsky</a>.</span>
+	</div>
+	<div class="span-2 last">
+		<a href="<% $c->uri_for('/credits') %>">credits</a>
+	</div>
+% }
+</div>
+
+</div><!-- End of Body Container -->
+
+</body>
+
+</html>
+<%method title>network console</%method>
+<%init>
+use Try::Tiny;
+my %OPT = (
+	sidebar => 'on',
+);
+foreach my $key (keys %OPT) {
+	my $attr = undef;
+	try { 
+		$attr = $m->base_comp->attr($key);
+	};
+	$OPT{$key} = defined $attr ? $attr : $OPT{$key};
+}
+</%init>
+<%shared>
+use Socket;
+sub pass_args {
+	my @keys = @_;
+
+	my %_args = $m->request_args();
+	my %pass = ();
+	foreach my $k (@keys) {
+		$pass{$k} = $_args{$k};
+	}
+
+	return %pass;
+}
+
+sub get_reverse {
+	my $ip = shift;
+
+	my $records = $c->dns_resolve($ip, $c->config->{dnsmgr}{preferred_nameserver});
+	my ($question,$answer) = split /=/, $records->[0];
+	$answer =~ s/PTR\s+//;
+	$answer ||= "($ip)";
+
+	return $answer;
+}
+</%shared>

@@ -1,0 +1,8 @@
+% if( ref $list eq 'ARRAY' ) {
+%	foreach my $entry (@{ $list }) {
+<% $entry %>
+%	} # End loop
+% } # End if list.
+<%args>
+	$list => undef
+</%args>

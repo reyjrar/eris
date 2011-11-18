@@ -1,0 +1,59 @@
+<%args>
+	$res_sth
+</%args>
+<table id="topEvents" class="display">
+<thead>
+  <tr>
+	<th>#</th>
+	<th>Host</th>
+	<th>Start</th>
+	<th>End</th>
+	<th>Violations</th>
+  </tr>
+</thead>
+<tbody>
+% my $cnt = 0;
+% while( my $href = $res_sth->fetchrow_hashref ) {
+<%perl>
+	my $name = length $href->{clientid} ? $href->{clientid} : '[NODE:' . $href->{offender_id} . ']';
+</%perl>
+<tr>
+	<td><% $href->{violations} %></td>
+	<td><a href="<% $c->uri_for('/node/' . $href->{offender_id} . '/view' ) %>"><% $name %></a></td>
+	<td><% $href->{first_ts} %></td>
+	<td><% $href->{last_ts} %></td>
+	<td><a href="#" id="displayEvents_<% $href->{offender_id} %>"><% $href->{violations} %></a></td>
+	<script type="text/javascript">
+	$('#displayEvents_<% $href->{offender_id} %>').bind('click', function(e) {
+			$.get('<% $c->uri_for('/events/node/' . $href->{offender_id} . '/ajax' ) %>',
+				function(data) {
+					$('#eventDisplayBox').html(data);
+					$('#eventDisplayBox').dialog({ width: 800,
+										title: 'Past 30 Days Events for <% $name %>' });
+				}	
+			);
+		}
+	);	
+	</script>
+</tr>
+% } 
+</tbody>
+</table>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#topEvents').dataTable({
+			'bJQueryUI': true,
+			'iDisplayLength': 25,
+			'aoColumns': [
+				{ 'bVisible': false },
+				null,
+				null,
+				null,
+				{ 'iDataSort': 0 }
+			],
+			'aaSorting': [ [ 0, 'desc' ] ]
+		});
+	});
+</script>
+<div id="eventDisplayBox" title="Events" class="ui-helper-reset ui-state-default" style="display: none;">
+</div>

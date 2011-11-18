@@ -1,0 +1,4 @@
+<h1>Network Tools</h1>
+<ul>
+  <li><a href="<% $c->uri_for('/network/history') %>">Search the History</a></li>
+</ul>

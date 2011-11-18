@@ -1,0 +1,73 @@
+# Default Configuration for eris application
+name eris
+<db>
+	dsn dbi:Pg:host=mydb.example.com;database=eris;sslmode=require
+	user eris_admin
+	pass eris_pass
+</db>
+<session>
+	dbic_class DB::sessions
+	expires 86400
+	verify_address 1
+</session>
+<Plugin::Authentication>
+	default_realm dbic
+	<realms>
+		<dbic>
+			<credential>
+				class Kerberos
+				kerberos_realm EXAMPLE.COM
+			</credential>
+			<store>
+				class DBIx::Class
+				user_model DB::user
+				user_field username
+				id_field user_id
+				role_relation roles
+				role_field name
+				user_role_user_field user_id
+			</store>
+		</dbic>
+	</realms>
+</Plugin::Authentication>
+<surplus>
+	name John Doe, PHB
+</surplus>
+<dnsmgr>
+	preferred_nameserver 1.1.1.1
+	local_area example
+	<areas>
+		<example>
+			nameserver 1.1.1.1
+			suffix example.com
+			reverse 1.1.1.0/24
+			reverse 1.2.3.0/24
+			reverse 1.2.4.0/24
+			dhcp 1.2.3.128/25
+			dhcp 1.2.4.128/25
+		</example>
+		<external>
+			nameserver 8.8.8.8
+			suffix example.com
+			suffix example.net
+		</external>
+	</areas>
+</dnsmgr>
+<trafmon>
+	<sniffer main>
+		url http://insight.lan.example.com/trafmon
+		network 1.1.1.0/24
+		network 1.2.3.0/24
+	</sniffer>
+	<sniffer satellite>
+		url http://remoteinsight.lan.example.com/trafmon
+		network 1.2.4.0/24
+	</sniffer>
+	<sniffer vlans>
+		url http://vlaninsight.lan.example.com/trafmon
+		network 10.0.0.0/24
+		network 192.168.0.0/24
+		network 192.168.1.0/24
+		network 192.168.2.0/24
+	</sniffer>
+</trafmon>

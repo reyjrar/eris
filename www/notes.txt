@@ -1,0 +1,7 @@
+/inventory/search
+	- Details
+/inventory/summary
+	- Windows Machines
+	- Seen Today, Past 7 Days, Month, 6 months
+	- Printers Discovered
+

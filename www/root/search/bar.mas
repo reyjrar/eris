@@ -1,0 +1,9 @@
+% if ( $c->user_exists ) {
+<form method="POST" action="<% $c->uri_for('/locate') %>">
+<div id="span-24 last">
+	<span class="prepend-10 span-2">network :</span>
+	<input type="text" name="query_str" id="query_str" class="span-6" value=""/>
+	<input class="button span-2 last" type="submit" name="find" value="search"/>
+</div>
+</form>
+% }

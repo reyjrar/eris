@@ -1,0 +1,84 @@
+<!-- Navigation -->
+% if( $c->check_any_user_role('eris::usage', 'eris::admin')  ) {
+<ul id="navigation" class="sf-menu">
+% foreach my $mi (@menuItems) {
+<%perl>
+  if( exists $mi->{roles}  && ref $mi->{roles} eq 'ARRAY' ) {
+	next unless $c->check_any_user_role( 'eris::admin', @{ $mi->{roles} } );
+  }
+</%perl>
+  <li><a href="<% $c->uri_for( $mi->{url} ) %>"><% $mi->{title} %></a>
+%	if( ref $mi->{items} eq 'ARRAY' ) {
+	  <ul>
+%	foreach my $si (@{ $mi->{items} }) {
+<%perl>
+	if( exists $si->{roles} && ref $si->{roles} eq 'ARRAY' ) {
+		next unless $c->check_any_user_role( 'eris::admin', @{ $si->{role} } );
+	}
+</%perl>
+		<li><a href="<% $c->uri_for( $si->{url} ) %>"><% $si->{title} %></a></li>
+% 	} # End of sub items;
+	</ul>
+%	} # end if sub items
+  </li>
+% } # END Main loop
+</ul>
+<script type="text/javascript">
+ $('#navigation').superfish();
+</script>
+% } # end if authenticated
+<%init>
+my @menuItems = (
+	{
+		title	=> 'main',
+		url		=> '/',
+		items 	=> undef,
+	},
+	{
+		title	=> 'dnsmgr',
+		url		=> '/dnsmgr/',
+		items	=> [
+			{ title => 'zone mgt', url => '/dnsmgr/zone/list', roles => [qw(dnsmgr::zonemgt)] },
+			{ title => 'ip mgt', url => '/dnsmgr/ipmgt/main', roles => [qw(dnsmgr::ipmgt)] },
+		],
+		roles	=> [ qw(dnsmgr::ipmgt dnsmgr::zonemgt dnsmgr::admin) ],
+	},
+	{
+		title	=> 'security',
+		url		=> '#',
+		items	=> [
+			{ title => 'events', url => '/events', roles => [qw(events::view)] },
+			{ title => 'console', url => '/events/console' },
+			{ title => 'signatures', url => '/signatures', roles => [qw(signatures::edit)] },
+		#	{ title => 'notifications', url => '/notifications' },
+		],
+	},
+	{
+		title 	=> 'nodes',
+		url		=> '/node',
+		items	=> [
+			{ title => 'add a node', url => '/node/add', roles => [qw(node::add)] },
+			{ title => 'status log', url => '/node/status' },
+			{ title => 'surplus', url => '/node/surplus' },
+#			{ title => 'my nodes', url => '/node/my' },
+		],
+		roles => [qw(node::add node::edit)],
+	},
+	{
+		title 	=> 'network',
+		url		=> '/network',
+		items	=> [
+			{ title => 'history', url => '/network/history' },
+#			{ title => 'my nodes', url => '/node/my' },
+		],
+		roles => [qw(eris::usage)],
+	},
+
+	{
+		title	=> 'logout',
+		url		=> '/logout',
+		items	=> undef,
+	},
+);
+</%init>
+

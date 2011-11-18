@@ -1,0 +1,16 @@
+<!--- Show lookup form -->
+<div class="prepend-1 last">
+<form method="POST" action="<% $c->uri_for('/node/surplus/lookup') %>">
+
+<h2>Property Tags To Surplus</h2>
+<div class="small">Enter one per line, and as many as you'd like.</div>
+
+<div class="prepend-1 last">
+<textarea class="span-5" name="property_tags">
+</textarea>
+</div>
+<div class="prepend-3 last">
+<input type="submit" name="surplus" value="Surplus These"/>
+</div>
+
+</form></div>

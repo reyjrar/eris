@@ -1,0 +1,76 @@
+<%args>
+	$zone
+	$warnings
+	$values
+</%args>
+<form method="POST" action="<% $c->uri_for( '/dnsmgr/zone/' . $zone->zone_id . '/create' ) %>">
+<div class="ui-tabs ui-widget-content ui-corner-all span-17 last">
+  <div class="ui-tabs ui-widget-header ui-corner-all"><span class="prepend-1">Verification of Request</span></div>
+  <div class="span-17 container last prepend-top">
+	<div class="column center ui-corner-all eris-box push-1 span-6">
+		<% $prefix %><% $values->{rec_name} %>
+		<input type="hidden" name="rec_name" value="<% $values->{rec_name} %>"/>
+	</div>
+	<div class="column span-3 center">
+		<% $alias_message %>
+		<input type="hidden" name="rec_type" value="<% $values->{rec_type} %>"/>
+	</div>
+	<div class="column center ui-corner-all eris-box span-6 last">
+		<% $values->{rec_value} %>
+		<input type="hidden" name="rec_value" value="<% $values->{rec_value} %>"/>
+	</div>
+  </div>
+  <div class="span-17 container last">
+	<div id="warningsName" class="small indent column span-7 push-1">
+% if( exists $warnings->{rec_name} && ref $warnings->{rec_name} eq 'ARRAY' ) {
+	<script type="text/javascript">
+		$('#warningsName').addClass('ui-state-highlight').addClass('ui-corner-all');
+	</script>
+% foreach my $warning ( @{ $warnings->{rec_name} } ) {
+		<div>
+% if( $warning =~ s/=ICON=//g ) {
+			<span class="float-left ui-icon ui-icon-info"></span>
+% }
+		<% $warning %>
+		</div>
+% } # end foreach warning
+% } # End Warings for rec_name
+	</div>
+	<div class="span-3"></div>
+	<div id="warningsValue" class="small indent column span-7 push-1">
+% if( exists $warnings->{rec_value} && ref $warnings->{rec_value} eq 'ARRAY' ) {
+	<script type="text/javascript">
+		$('#warningsValue').addClass('ui-state-highlight').addClass('ui-corner-all');
+	</script>
+% foreach my $warning ( @{ $warnings->{rec_value} } ) {
+		<div>
+% if( $warning =~ s/=ICON=//g ) {
+			<span class="float-left ui-icon ui-icon-info"></span>
+% }
+		<% $warning %>
+		</div>
+% } # end foreach warning
+% }	
+	</div>
+  </div>
+  <div class="container center span-17 last">
+	<button type="submit" class="span-3 eris-button-green ui-corner-all" name="action" value="save">save</button>
+	<span class="span-1">&nbsp;</span>
+	<button type="submit" class="span-3 eris-button-red ui-corner-all" name="action" value="cancel">cancel</button>
+  </div>
+</div>
+</form>
+<%init>
+use Data::Dumper;
+
+my $alias_message = $values->{rec_type} eq 'A'		? 'is ip address'  :
+					$values->{rec_type} eq 'CNAME'	? 'is an alias for' :
+					'is';
+
+my $prefix = '';
+if( $zone->type eq 'reverse' ) {
+	my $name = $zone->name;
+	my ($reversed) = ($name =~ /([0-9\.]+)\./);
+	$prefix = join('.', reverse split /\./, $reversed) . '.';
+}
+</%init>

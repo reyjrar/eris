@@ -1,0 +1,23 @@
+<!--- Argument Parser -->
+<h3>Parameters</h3>
+<xmp>
+% print Dumper ($c->req->params);
+</xmp>
+
+<h3>Stash</h3>
+<xmp>
+% print Dumper (\%ARGS);
+</xmp>
+
+<h3>Session</h3>
+<xmp>
+% print Dumper ($c->session);
+</xmp>
+
+
+
+<%init>
+use Data::Dumper;
+
+$Data::Dumper::Maxdepth = 3;
+</%init>

@@ -1,0 +1,142 @@
+<%attr>
+	sidebar => 'off'
+</%attr>
+<%args>
+	$entries
+</%args>
+<!--- Verify and confirm details -->
+
+<div class="prepend-1 span-22 last">
+% my $id = 0;
+<form id="surplusForm" method="POST" action="<% $c->uri_for('/node/surplus/process') %>">
+% foreach my $entry ( @{ $entries } ) {
+% 	++$id;
+  <div class="span-22 last">
+	<input type="hidden" name="property_tag" value="<% $entry->{property_tag} %>"/>
+	<h2>Tag: <% $entry->{property_tag}%></h2>
+
+	<!--- Row 1 -->
+	<div class="span-5">
+		<label for="mac_<% $id %>">MAC :</label>
+		<input type="text" name="mac_address" id="mac_<% $id %>" value="<% $entry->{mac_address} %>"/>
+	</div>
+
+	<div class="span-5">
+		<label for="model_<% $id %>">Make/Model :</label>
+		<input type="text" name="make_model" id="model_<% $id %>" value="<% $entry->{make_model} %>"/>
+	</div>
+
+	<div class="span-5">
+		<label for="serial_<% $id %>">Serial :</label>
+		<input type="text" name="serial_no" id="serial_<% $id %>" value="<% $entry->{serial_no} %>"/>
+	</div>
+
+	<div class="span-5 last">
+		<label for="user_<% $id %>">Owner :</label>
+		<input type="text" name="primary_user" id="user_<% $id %>" value="<% $entry->{primary_user} %>"/>
+	</div>
+	<!--- Row 2 -->
+	<div class="span-5">
+% if ( length $entry->{mac_address} != 17 ) {
+		<label for="fake_mac_<% $id %>">Unknown MAC</label>
+		<input type="checkbox" name="fake_mac" id="fake_mac_<% $id %>" value="true"/>
+% }
+	</div>
+	<div class="span-5">
+	</div>
+	<div class="span-5">
+	</div>
+	<div class="span-5 last">
+	</div>
+  </div>
+  <hr class="space"/>
+% } # End each Entry
+
+	<div class="span-22 center last">
+		<input type="submit" name="surplus" value="Confirm Surplus"/>
+	</div>
+</form></div>
+
+<script type="text/javascript">
+/* Auto Completion */
+$('input[name="primary_user"]').autocomplete({ minLength: 2, source: function( request, response ) {
+		$.ajax({
+			url: "<% $c->uri_for('/user/search/json') %>",
+			data: { q: request.term },
+			success: function(data) { response( data ); }
+		});
+	}
+});
+$('input[name="make_model"]').autocomplete({ minLength: 2, source: function( request, response ) {
+		$.ajax({
+			url: '<% $c->uri_for('/node/makemodel/json') %>',
+			data: { q: request.term },
+			success: function(data) { response(data); }
+		});
+	}
+});
+
+/* Form Validation */
+$('#surplusForm').submit(function() {
+	var error = null;
+
+	$('input[name="make_model"]').each(function(i,elm) {
+		var value = $(elm).val();
+		var lbl = $('label[for="' + $(elm).attr('id') + '"]'); 
+		if( value.length < 4 ) {
+			error = "Make / Model";
+			lbl.toggleClass('ui-state-error-text', true);
+		}
+		else {
+			lbl.toggleClass('ui-state-error-text', false);
+		}
+	});
+
+	if(!error) {
+		$('input[name="primary_user"]').each(function(i,elm) {
+			var value = $(elm).val();
+			var lbl = $('label[for="' + $(elm).attr('id') + '"]');
+			if( value.length < 3 ) {
+				error = "Owner";
+				lbl.toggleClass('ui-state-error-text', true);
+			}
+			else {
+				lbl.toggleClass('ui-state-error-text', false);
+			}
+		});
+	}
+	if(!error) {
+		$('input[name="mac_address"]').each(function(i,elm) {
+			var value = $(elm).val();
+			var lbl = $('label[for="' + $(elm).attr('id') + '"]');
+			if( value.length != 17 ) {
+				var str = $(elm).attr('id');
+				var parts = str.split('_');
+				var id = parts[1];
+				var checked = $('#fake_mac_' + id).is(':checked');
+				if( !checked ) {
+					error = "MAC Address";
+					lbl.toggleClass('ui-state-error-text', true);
+				}
+				else {
+					lbl.toggleClass('ui-state-error-text', false);
+				}
+			}
+			else {
+				lbl.toggleClass('ui-state-error-text', false);
+			}
+		});
+	}
+
+	if( error ) {
+		$.gritter.add({
+			title: 'Validation Failed',
+			text: 'Please make sure all ' + error + ' fields are filled out.',
+			sticky: true,
+			image: '<% $c->uri_for('/static/images/pastel-svg/exclamation.png') %>'
+		});
+		return false;
+	}
+	return true;
+});
+</script>

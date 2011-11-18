@@ -1,0 +1,43 @@
+<%args>
+	$notification_rs => undef
+</%args>
+
+% if( defined $notification_rs && $notification_rs->count > 0 ) {
+<table id="notifList" class="display">
+<thead>
+<tr>
+	<th>Status</th>
+	<th>Name</th>
+	<th>Event Trigger</th>
+	<th>Origination Alert</th>
+	<th>Notification Interval</th>
+	<th>Last Interval</th>
+</tr>
+</thead>
+<tbody>
+% while( my $notification = $notification_rs->next ) {
+  <tr>
+	<td class="center"><span class="ss_sprite <% $notification->is_enabled ? 'ss_tick' : 'ss_cross' %>">&nbsp;</span></td>
+	<td><a href="<% $c->uri_for('/notifications/view', $notification->notification_id ) %>"><% $notification->name %></a></td>
+	<td><% $notification->event_type->name %></td>
+	<td><% $notification->orig_user_alert ? 'Yes' : 'No' %></td>
+	<td><% $notification->notification_interval %></td>
+	<td><% $notification->last_interval_ts->strftime('%F %T') %></td>
+  </tr>
+% } # End while
+</tbody>
+</table>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#notifList').dataTable({
+		'bJQueryUI': true,
+		'aaSorting': [ [ 1, 'asc' ] ]
+	});
+});
+</script>
+% } # END IF NOTIFICATIONS
+
+<ul>
+	<li><a href="<% $c->uri_for('/notifications/add') %>" alt="create">Add A New Notification</a></li>
+</ul>
+<%method title>notification management</%method>

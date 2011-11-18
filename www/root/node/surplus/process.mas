@@ -1,0 +1,33 @@
+<%args>
+	$entries
+</%args>
+<h1>Batch Surplus</h1>
+<form method="POST" action="<% $c->uri_for('/node/surplus/print') %>">
+<table>
+<thead>
+<tr>
+	<th>Tag</th>
+	<th>MAC</th>
+	<th>Make/Model</th>
+	<th>Serial</th>
+	<th>Owner</th>
+	<th>Print ?</th>
+</tr>
+<tr>
+	<th colspan="6" class="center"><input type="submit" name="print" value="Print Surplus Sheet"/></th>
+</tr>
+</thead>
+<tbody>
+% foreach my $entry ( @{ $entries } ) {
+	<tr>
+		<td><% $entry->{property_tag} %></td>
+		<td><% $entry->{mac_address} %></td>
+		<td><% $entry->{make_model} %></td>
+		<td><% $entry->{serial_no} %></td>
+		<td><% $entry->{primary_user} %></td>
+		<td><input type="checkbox" name="device_id" value="<% $entry->{device_id} %>" checked="checked"/></td>
+	</tr>
+% }
+</tbody>
+</table>
+</form>
