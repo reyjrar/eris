@@ -372,9 +372,9 @@ sub send_email {
 		Type	=> 'TEXT',
 	);
 	my %headers = (
-			'X-NIAIRP-Automation'	=> 'true',
-			'X-NIAIRP-Function'		=> 'notification',
-			'X-NIAIRP-Program'		=> $0,
+			'X-Automation'				=> 'true',
+			'X-Automation-Function'		=> 'eris-notification',
+			'X-Automation-Program'		=> $0,
 	);
 	while ( my ($k,$v) = each %headers ) {
 		$msg->add($k,$v);
