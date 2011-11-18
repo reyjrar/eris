@@ -7,3 +7,21 @@ inventory related events into a [PostgreSQL](http://postgresql.org)
 database.  It integrates with a number of Open Source projects to provide a
 searchable inventory of network events.
 
+## Requirements
+
+ * [PostgreSQL](http://postgresql.org) (8.3+ Recommended)
+ * [Perl](http://perl.com) (5.12+ Recommended)
+ ** [POE](http://poe.perl.org)
+ ** [POE::Component::Server::eris](https://github.com/reyjrar/POE-Component-Server-eris)
+ ** [POE::Component::Client::eris](https://github.com/reyjrar/POE-Component-Client-eris)
+ ** [Catalyst](http://catalyst.perl.org)
+ * A Central Syslog Implementation
+
+## Suggestions
+
+ * [rsyslog](http://rsyslog.com) - Open Source Syslog Daemon with tons of features
+ * [Netdisco](http://netdisco.org) - Layer 2 Network Managment
+ * [Snort](http://snort.org) - Open Source IDS
+ * arpwatch
+
+# more to come ..
