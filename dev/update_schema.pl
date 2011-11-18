@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use YAML;
 use FindBin;
 
 use DBIx::Class::Schema::Loader qw/ make_schema_at /;
@@ -95,6 +96,6 @@ make_schema_at(
 		skip_relationships => 1,
 		components => [qw(InflateColumn::DateTime PK::Auto)],
 	},
-	[ $CFG->{db}{dsn}, $CFG->{db}{user}, $CFG->{db}{pass} ]
+	[ $CFG->{db_dsn}, $CFG->{db_user}, $CFG->{db_pass} ]
 
 );
