@@ -3,7 +3,7 @@
 ## Background
 
 This is a loosely related series of Perl scripts to correlate network
-inventory related events into a [Postgresql](http://postgresql.org)
+inventory related events into a [PostgreSQL](http://postgresql.org)
 database.  It integrates with a number of Open Source projects to provide a
 searchable inventory of network events.
 
