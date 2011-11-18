@@ -1,11 +1,11 @@
 MAILTO=admins@example.com
 ERISDIR=/opt/local/eris
 #
-# Scour Routines eris
+# eris collectors
 45 * * * * $ERISDIR/collector/arpimport.pl /var/run/arpwatch.dat
 10 * * * * $ERISDIR/collector/netdisco.pl
 
-# MAINTENANCE
+# eris database maintenance
 30 3 * * * $ERISDIR/db/pruning.pl
 10 5 * * * $ERISDIR/db/maintenance.pl --mode full
 20 6 * * 1 $ERISDIR/db/maintenance.pl --mode reindex
