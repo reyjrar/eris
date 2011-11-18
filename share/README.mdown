@@ -1,0 +1,24 @@
+# Resources for running eris
+
+## monit
+
+In the monit subdirectory, there are sample monit configs for use with eris
+collectors and the eris dnsmgr system.
+
+## pgsql
+
+The schema for the [Postgresql](http://postgresql.org) database.  In the
+future this will be replaced with a versioned schema and deployment system.
+For right now, you can just:
+
+   psql -U eris_user eris < eris.sql
+
+## eris.crontab
+
+This is the recommended crontab for eris maintenance scripts. Edit the file
+and replace these lines to match your deployment:
+
+   MAILTO=admin@example.com
+   ERISDIR=/opt/local/eris
+
+# more to come ..
