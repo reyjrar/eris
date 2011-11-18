@@ -11,10 +11,10 @@ searchable inventory of network events.
 
  * [PostgreSQL](http://postgresql.org) (8.3+ Recommended)
  * [Perl](http://perl.com) (5.12+ Recommended)
- ** [POE](http://poe.perl.org)
- ** [POE::Component::Server::eris](https://github.com/reyjrar/POE-Component-Server-eris)
- ** [POE::Component::Client::eris](https://github.com/reyjrar/POE-Component-Client-eris)
- ** [Catalyst](http://catalyst.perl.org)
+  * [POE](http://poe.perl.org)
+  * [POE::Component::Server::eris](https://github.com/reyjrar/POE-Component-Server-eris)
+  * [POE::Component::Client::eris](https://github.com/reyjrar/POE-Component-Client-eris)
+  * [Catalyst](http://catalyst.perl.org)
  * A Central Syslog Implementation
 
 ## Suggestions
