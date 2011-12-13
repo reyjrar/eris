@@ -1,34 +1,62 @@
 #!/usr/bin/env perl 
-
+#
+# Uses data in the LSOF to map IP's to Usernames
+#
 use strict;
 use warnings;
 
 use CHI;
-use File::Spec;
+use FindBin;
 use File::Basename;
+use File::Spec;
+use Daemon::Daemonize qw( check_pidfile write_pidfile daemonize );
+use YAML;
 use Regexp::Common qw(net);
 use POE qw(
 	Wheel::Run
 	Filter::Line
-	Component::Daemon
 	Component::Logger
 );
+use Getopt::Std;
+#------------------------------------------------------------------------#
+# Argument Handling
+my %OPTS;
+getopts('dn', \%OPTS);
 
 #------------------------------------------------------------------------#
-# Find our ETC Directory
-my $PROGRAM = $0;
-my $BINDIR = File::Spec->rel2abs( (fileparse( $PROGRAM ))[1] );
-my @BINDIR = File::Spec->splitdir( $BINDIR );
-pop @BINDIR;
-my $ROOT_DIR = File::Spec->catdir( @BINDIR );
-my $ETC_DIR = File::Spec->catdir( $ROOT_DIR, 'etc' );
-my $LOGCONF = File::Spec->catfile( $ETC_DIR, 'logging.conf');
+# Path Setup
+my @BasePath = File::Spec->splitdir("$FindBin::Bin");
+pop @BasePath;	# Strip Binary Directory
 
-print "LOGGING on $LOGCONF\n";sleep 1;
+my $BASEDIR = File::Spec->rel2abs( File::Spec->catdir(@BasePath) );
+my $ETC = File::Spec->catdir( $BASEDIR, 'etc' );
+# Configs
+my $CFG = YAML::LoadFile( File::Spec->catfile($ETC, 'eris.cfg') );
+my $LOGCONF = File::Spec->catfile( $ETC, 'logging.conf' );
+my $STATEDIR = $CFG->{statedir};
 
 #------------------------------------------------------------------------#
-POE::Component::Daemon->spawn( detach => 1, babysit => 600, max_children => 5 );
+# Daemonize if necessary:
+if( !$OPTS{d} ) {
+	my $base = basename $0;
 
+	mkdir $STATEDIR, 0755 unless -d $STATEDIR;
+	my $PIDFILE = File::Spec->catfile( $STATEDIR, $base . '.pid' );
+
+	my $pid = check_pidfile( $PIDFILE );
+	if( $pid > 0 ) {
+		warn "$base - another process is currently running ($pid)\n";
+		exit 1;
+	}
+	
+	daemonize( chdir => $BASEDIR, close => 'std' );
+	write_pidfile( $PIDFILE );
+	$poe_kernel->has_forked();
+}
+
+
+#------------------------------------------------------------------------#
+# Main POE Sessions
 POE::Component::Logger->spawn( ConfigFile => $LOGCONF );
 
 POE::Session->create( inline_states => {

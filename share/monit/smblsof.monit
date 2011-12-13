@@ -1,0 +1,12 @@
+check process smblsof with pidfile /var/run/eris/smblsof.pl.pid
+	group eris
+	start program "/usr/local/bin/perl /opt/local/eris/collector/smblsof.pl"
+		as uid apache and gid apache
+	stop program "/bin/bash -c 'kill -s SIGTERM `cat /var/run/eris/smblsof.pl.pid`'"
+	if 5 restarts within 5 cycles then timeout
+	depends on smblsof_bin
+
+check file smblsof_bin with path /opt/local/eris/collector/smblsof.pl
+	group eris
+	if changed checksum then restart
+	if changed timestamp then restart
