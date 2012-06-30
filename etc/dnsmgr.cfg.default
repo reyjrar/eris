@@ -13,7 +13,7 @@ sources:
     interval: 90
     zones:
       - example.com
-   
+
   dhcp:
     enabled: 0
     engine: eris::dnsmgr::read::dhcpd_log
